@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DemoApp": {
+      "commandName": "Project",
+      "commandLineArgs": "-h"
+    }
+  }
+}
