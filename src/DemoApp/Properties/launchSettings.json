@@ -2,7 +2,8 @@
   "profiles": {
     "DemoApp": {
       "commandName": "Project",
-      "commandLineArgs": "-h"
+      //"commandLineArgs": "-h"
+      "commandLineArgs": "-h repeat"
       //"commandLineArgs": "repeat \"Hello\" -n 5 -w 500"
     }
   }
