@@ -41,36 +41,65 @@ public class CommandOptions
     {
         var parameters = handler.Method.GetParameters();
 
-        var symbolTypes = Command.Arguments
-            .Select(arg => arg.ValueType)
-            .ToList();
-        symbolTypes.AddRange(
-            Command.Options.Select(opt => opt.ValueType)
-        );
+        // ensure the count of command arguments/options matches the count of parameters
+        var symbolCount = Command.Arguments.Count + Command.Options.Count;
+        if (parameters.Length > symbolCount)
+        {
+            var missingParameter = parameters[symbolCount];
 
-        if (parameters.Length > symbolTypes.Count)
             throw new ArgumentException(nameof(handler),
                 $"The number of Handler parameters for command {Command.Name} " +
-                $"is greater than the provided arguments and options.");
-
-        if (symbolTypes.Count > parameters.Length)
+                $"is greater than the provided arguments and options, could not find " +
+                $"an Argument or Option for {missingParameter.Name}.");
+        }
+        if (symbolCount > parameters.Length)
             throw new ArgumentException(nameof(handler),
                 $"The number of arguments and options for command {Command.Name} " +
                 $"is greater than the parameters of the handler.");
 
-        for (int i = 0; i < symbolTypes.Count; i++)
+        var symbols = new List<(Type ValueType, Symbol symbol)>();
+
+        // go through each argument and option in order, and compare them with each parameter
+        for (int i = 0; i < Command.Arguments.Count + Command.Options.Count; i++)
         {
-            var symbol = symbolTypes[i];
             var parameter = parameters[i];
-            if (symbol != parameter.ParameterType)
-                throw new ArgumentException(nameof(handler), 
-                    $"Handler parameters Types for command {Command.Name} " +
-                    $"do not match the provided arguments and options.  " +
-                    $"Parameter[{i}] is {parameter.ParameterType.Name} and handler[{i}] is {symbol.Name}.");
+            var paramIsOptional = parameter.IsOptional;
+
+            if(i < Command.Arguments.Count)
+            {
+                var argument = Command.Arguments[i];
+
+                if (argument.ValueType != parameter.ParameterType)
+                    throw new Exception($"Argument ({argument.Name}) and parameter ({parameter.Name}) type mismatch.");
+
+                // by convention, if the parameter is optional, grab the default value and add it to the documentation
+                if (paramIsOptional && !argument.HasDefaultValue)
+                    argument.SetDefaultValue(parameter.DefaultValue);
+            }
+            else
+            {
+                var option = Command.Options[i - Command.Arguments.Count];
+
+                if(paramIsOptional)
+                    option.SetDefaultValue(parameter.DefaultValue);
+
+                // by convention, if the parameter is required and the option is not, set the option to be required
+                if (!paramIsOptional && !option.IsRequired)
+                    option.IsRequired = true;
+
+                if (option.ValueType != parameter.ParameterType)
+                    throw new Exception($"Option ({option.Name}) and parameter ({parameter.Name}) type mismatch.");
+
+                // if the parameter is optional, grab the default value and add it to the documentation
+                if (paramIsOptional && option.IsRequired)
+                    throw new Exception($"Optional Option ({option.Name}) and required parameter mismatch.");
+            }
         }
 
         _delegateHandler = handler;
+
         Command.SetHandler(delegateCaller);
+
         return this;
     }
 
@@ -95,11 +124,24 @@ public class CommandOptions
             dynamicArguments.Add(argVal);
         }
 
-        var reault = _delegateHandler.DynamicInvoke(dynamicArguments.ToArray());
+        // run the method based on the return type
+        var returnType = _delegateHandler.Method.ReturnType;
 
-    }
-    Task handlerAsync(InvocationContext context)
-    {
-        throw new NotImplementedException();
+        if(returnType == typeof(Task))
+        {
+            var task = (Task)_delegateHandler.DynamicInvoke(dynamicArguments.ToArray());
+
+            task.ConfigureAwait(false)
+                .GetAwaiter()
+                .GetResult();
+        }
+        else if(returnType == typeof(void))
+        {
+            var result = _delegateHandler.DynamicInvoke(dynamicArguments.ToArray());
+        }
+        else
+        {
+            throw new NotSupportedException($"A handler of type {returnType} is not supported.");
+        }
     }
 }
