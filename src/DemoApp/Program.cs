@@ -1,32 +1,35 @@
 ﻿using System.CommandLine.Minimal;
 using DemoApp.Handlers;
 
-//await
-new MinimalCommandLineBuilder()
-    .AddRootDescription("A collection of commands for printing to the console.")
-    //.AddRootAlias("print")
-    //.AddRootArgument<string>("mainArgName")
-    //.AddRootOption<int>("-n")
+var builder = new MinimalCommandLineBuilder()
+    .AddRootDescription("A collection of commands for printing to the console.");
 
-    .AddCommand("echo",
-        cmdOptions => cmdOptions
-            .AddCommandDescription("Print a message to the console.")
-            .AddArgument<string>("Message", "The message to repeat.")
-            .SetHandler(EchoHandler.Handle)
-    )
+// TODO: add services up here
 
-    .AddCommand("repeat",
-        cmdOptions => cmdOptions
-            .AddCommandDescription("Repeat a message to the console a number of times.")
-            .AddArgument<string>("Message", "The message to repeat.")
-            .AddOption<int>("-n", "Number of times to repeat.")
-            .SetHandler((string message, int repeat) => 
-            {
-                for (int i = 0; i < repeat; i++)
-                    Console.WriteLine(message);
-            })
-    )
-    .Execute(args)
-    //.ExecuteAsync(args)
-    ;
 
+// TODO: var app = builder.Build();
+
+
+// TODO: app.MapCommand("echo", (string message) => {
+//      Console.WriteLine(message)
+//  })
+//   .WithDescription("Print a message to the console.")
+//   .DescribeArgument<string>("Message")
+
+builder.AddCommand("echo",
+    cmdOptions => cmdOptions
+    .AddCommandDescription("Print a message to the console.")
+    .AddArgument<string>("Message", "The message to repeat.")
+    .SetHandler(EchoHandler.Handle)
+);
+
+builder.AddCommand("repeat",
+    cmdOptions => cmdOptions
+    .AddCommandDescription("Repeat a message to the console a number of times.")
+    .AddArgument<string>("Message", "The message to repeat.")
+    .AddOption<int>("-n", "Number of times to repeat.")
+    .AddOption<int>("-w", "Wait times between messages (in milliseconds).")
+    .SetHandler(RepeatHandler.HandleAsync)
+);
+
+builder.Execute(args);
