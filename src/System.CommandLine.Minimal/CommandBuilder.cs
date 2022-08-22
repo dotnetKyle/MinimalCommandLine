@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Extensions.Options;
+using System.Collections.Generic;
 using System.CommandLine.Invocation;
 using System.Linq;
 using System.Threading.Tasks;
@@ -38,10 +39,18 @@ public class CommandBuilder
 
         return this;
     }
-    public CommandBuilder AddOption<T>(string name, string? description = null)
+    public CommandBuilder AddOption<T>(string name, Action<OptionBuilder<T>>? options = null)
     {
-        var opt = new Option<T>(name, description);
-        Command.AddOption(opt);
+        var option = new Option<T>(name);
+
+        if(options is not null)
+        {
+            var optBuilder = new OptionBuilder<T>(option);
+            options(optBuilder);
+        }
+
+        Command.AddOption(option);
+
         return this;
     }
     public CommandBuilder SetHandler(Delegate handler)

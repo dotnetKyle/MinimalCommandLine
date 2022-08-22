@@ -34,8 +34,13 @@ builder.AddCommand("repeat",
         arg.AddDescription("The message to repeat.")
             .AddArity(ArgumentArity.ZeroOrOne);
     })
-    .AddOption<int>("-n", "Number of times to repeat.")
-    .AddOption<int>("-w", "Wait times between messages (in milliseconds).")
+    .AddOption<int>("-rn", options => {
+        options.AddAlias("--repeat-number")
+            .AddDesccription("Number of times to repeat.");
+    })
+    .AddOption<int>("-w", options => {
+        options.AddDesccription("Wait times between messages (in milliseconds).");
+    })
     .SetHandler(RepeatHandler.HandleAsync)
 );
 
