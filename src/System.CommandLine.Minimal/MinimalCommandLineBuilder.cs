@@ -43,10 +43,10 @@ public class MinimalCommandLineBuilder
         return this;
     }
 
-    public MinimalCommandLineBuilder AddCommand(string commandName, Action<CommandOptions> cmdOptions)
+    public MinimalCommandLineBuilder AddCommand(string commandName, Action<CommandBuilder> cmdOptions)
     {
         var cmd = new Command(commandName);
-        var opt = new CommandOptions(cmd);        
+        var opt = new CommandBuilder(cmd);        
         cmdOptions(opt);
         RootCommand.AddCommand(opt.Command);        
         return this;
