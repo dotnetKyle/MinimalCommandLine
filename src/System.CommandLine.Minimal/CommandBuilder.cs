@@ -4,33 +4,33 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace System.CommandLine.Minimal;
-public class CommandOptions
+public class CommandBuilder
 {
-    internal CommandOptions(Command cmd)
+    internal CommandBuilder(Command cmd)
     {
         Command = cmd;
     }
 
     internal Command Command;
 
-    public CommandOptions AddCommandDescription(string description)
+    public CommandBuilder AddCommandDescription(string description)
     {
         Command.Description = description;
 
         return this;
     }
-    public CommandOptions AddAlias(string alias)
+    public CommandBuilder AddAlias(string alias)
     {
         Command.AddAlias(alias);
         return this;
     }
-    public CommandOptions AddArgument<T>(string name, Action<ArgumentOptions<T>>? argOptions = null)
+    public CommandBuilder AddArgument<T>(string name, Action<ArgumentBuilder<T>>? argOptions = null)
     {
         var arg = new Argument<T>(name);
         
         if(argOptions is not null)
         {
-            var opt = new ArgumentOptions<T>(arg);
+            var opt = new ArgumentBuilder<T>(arg);
             argOptions(opt);
         }
 
@@ -38,13 +38,13 @@ public class CommandOptions
 
         return this;
     }
-    public CommandOptions AddOption<T>(string name, string? description = null)
+    public CommandBuilder AddOption<T>(string name, string? description = null)
     {
         var opt = new Option<T>(name, description);
         Command.AddOption(opt);
         return this;
     }
-    public CommandOptions SetHandler(Delegate handler)
+    public CommandBuilder SetHandler(Delegate handler)
     {
         var parameters = handler.Method.GetParameters();
 
