@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace System.CommandLine.Minimal;
-
 public class CommandOptions
 {
     internal CommandOptions(Command cmd)
@@ -25,10 +24,18 @@ public class CommandOptions
         Command.AddAlias(alias);
         return this;
     }
-    public CommandOptions AddArgument<T>(string name, string? description = null)
+    public CommandOptions AddArgument<T>(string name, Action<ArgumentOptions<T>>? argOptions = null)
     {
-        var arg = new Argument<T>(name, description);
+        var arg = new Argument<T>(name);
+        
+        if(argOptions is not null)
+        {
+            var opt = new ArgumentOptions<T>(arg);
+            argOptions(opt);
+        }
+
         Command.AddArgument(arg);
+
         return this;
     }
     public CommandOptions AddOption<T>(string name, string? description = null)

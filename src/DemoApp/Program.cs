@@ -1,4 +1,5 @@
-﻿using System.CommandLine.Minimal;
+﻿using System.CommandLine;
+using System.CommandLine.Minimal;
 using DemoApp.Handlers;
 
 var builder = new MinimalCommandLineBuilder()
@@ -19,14 +20,20 @@ var builder = new MinimalCommandLineBuilder()
 builder.AddCommand("echo",
     cmdOptions => cmdOptions
     .AddCommandDescription("Print a message to the console.")
-    .AddArgument<string>("Message", "The message to repeat.")
+    .AddArgument<string>("Message", arg => {
+        arg.AddDescription("The message to repeat.")
+            .SetDefaultValue("Hello World");
+    })
     .SetHandler(EchoHandler.Handle)
 );
 
 builder.AddCommand("repeat",
     cmdOptions => cmdOptions
     .AddCommandDescription("Repeat a message to the console a number of times.")
-    .AddArgument<string>("Message", "The message to repeat.")
+    .AddArgument<string>("Message", arg => {
+        arg.AddDescription("The message to repeat.")
+            .AddArity(ArgumentArity.ZeroOrOne);
+    })
     .AddOption<int>("-n", "Number of times to repeat.")
     .AddOption<int>("-w", "Wait times between messages (in milliseconds).")
     .SetHandler(RepeatHandler.HandleAsync)
