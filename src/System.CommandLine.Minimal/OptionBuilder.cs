@@ -9,7 +9,7 @@ public class OptionBuilder<T>
 
     internal Option<T> Option;
 
-    public OptionBuilder<T> AddDesccription(string description)
+    public OptionBuilder<T> AddDescription(string description)
     {
         Option.Description = description;
         return this;
@@ -18,6 +18,16 @@ public class OptionBuilder<T>
     {
         foreach(var alias in aliases)
             Option.AddAlias(alias);
+        return this;
+    }
+    public OptionBuilder<T> AddDefaultValue(T value)
+    {
+        Option.SetDefaultValue(value);
+        return this;
+    }
+    public OptionBuilder<T> AddDefaultValueFactory(Func<object?> factory)
+    {
+        Option.SetDefaultValueFactory(factory);
         return this;
     }
 }

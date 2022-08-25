@@ -1,18 +1,28 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.CommandLine.Invocation;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace System.CommandLine.Minimal;
+
+public class CommandBuilder<THandler>
+{
+    // implement a new version of commandbuilder that knows what type of handler it has
+}
 public class CommandBuilder
 {
-    internal CommandBuilder(Command cmd)
+    IServiceProvider _serviceProvider;
+    internal Command Command;
+
+    internal CommandBuilder(Command cmd, IServiceProvider serviceProvider)
     {
         Command = cmd;
+        _serviceProvider = serviceProvider;
     }
 
-    internal Command Command;
 
     public CommandBuilder AddCommandDescription(string description)
     {
@@ -51,6 +61,15 @@ public class CommandBuilder
 
         Command.AddOption(option);
 
+        return this;
+    }
+    public CommandBuilder MapHandler<THandler>(Func<THandler, Delegate> mapper)
+        where THandler : class
+    {
+        // use DI during runtime to get an instance of the handler
+        HandlerType = typeof(THandler);
+        DelegateLocator = (Func<object, Delegate>)mapper;
+        Command.SetHandler(handlerActivator);
         return this;
     }
     public CommandBuilder SetHandler(Delegate handler)
@@ -119,8 +138,51 @@ public class CommandBuilder
         return this;
     }
 
+    Type? HandlerType;
+    Func<object, Delegate> DelegateLocator;
     Delegate? _delegateHandler;
+    void handlerActivator(InvocationContext context)
+    {
+        var handler = _serviceProvider.GetRequiredService(HandlerType);
+        var dlgt = DelegateLocator(handler);
 
+        if (dlgt is null)
+            throw new ArgumentNullException("Handler",
+                $"Delegating handler for command \"{Command.Name}\" was not set.");
+
+        var dynamicArguments = new List<object?>();
+
+        foreach (var arg in Command.Arguments)
+        {
+            var argVal = context.ParseResult.GetValueForArgument(arg);
+            dynamicArguments.Add(argVal);
+        }
+        foreach (var opt in Command.Options)
+        {
+            var argVal = context.ParseResult.GetValueForOption(opt);
+            dynamicArguments.Add(argVal);
+        }
+
+        // run the method based on the return type
+        var returnType = dlgt.Method.ReturnType;
+
+        if (returnType == typeof(Task))
+        {
+            var task = (Task)dlgt.DynamicInvoke(dynamicArguments.ToArray());
+
+            task.ConfigureAwait(false)
+                .GetAwaiter()
+                .GetResult();
+        }
+        else if (returnType == typeof(void))
+        {
+            var result = dlgt.DynamicInvoke(dynamicArguments.ToArray());
+        }
+        else
+        {
+            throw new NotSupportedException($"A handler of type {returnType} is not supported.");
+        }
+    }
     void delegateCaller(InvocationContext context)
     {
         if (_delegateHandler is null)

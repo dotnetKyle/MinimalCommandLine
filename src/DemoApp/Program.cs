@@ -1,47 +1,171 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Minimal;
 using DemoApp.Handlers;
+using DemoApp.Services;
+using Microsoft.Extensions.DependencyInjection;
 
-var builder = new MinimalCommandLineBuilder()
-    .AddRootDescription("A collection of commands for printing to the console.");
-
-// TODO: add services up here
-
-
-// TODO: var app = builder.Build();
+var builder = new MinimalCommandLineAppBuilder();
 
 
-// TODO: app.MapCommand("echo", (string message) => {
-//      Console.WriteLine(message)
-//  })
-//   .WithDescription("Print a message to the console.")
-//   .DescribeArgument<string>("Message")
+builder.Services
+    .AddTransient<ISerialNumberProvider, FileSerialNumberProvider>();
 
-builder.AddCommand("echo",
-    cmdOptions => cmdOptions
-    .AddCommandDescription("Print a message to the console.")
-    .AddArgument<string>("Message", arg => {
-        arg.AddDescription("The message to repeat.")
-            .SetDefaultValue("Hello World");
-    })
-    .SetHandler(EchoHandler.Handle)
-);
 
-builder.AddCommand("repeat",
-    cmdOptions => cmdOptions
-    .AddCommandDescription("Repeat a message to the console a number of times.")
-    .AddArgument<string>("Message", arg => {
-        arg.AddDescription("The message to repeat.")
-            .AddArity(ArgumentArity.ZeroOrOne);
-    })
-    .AddOption<int>("-rn", options => {
-        options.AddAlias("--repeat-number")
-            .AddDesccription("Number of times to repeat.");
-    })
-    .AddOption<int>("-w", options => {
-        options.AddDesccription("Wait times between messages (in milliseconds).");
-    })
-    .SetHandler(RepeatHandler.HandleAsync)
-);
+var app = builder.Build();
 
-builder.Execute(args);
+app.AddRootDescription("Commands for creating certificates.");
+
+
+app.AddCommand("rootCA", commandOptions => {
+    commandOptions
+        .MapHandler<RootCaGenerator>(h => h.GenerateRootCaAsync)
+        .AddCommandDescription("Create a self-signed root CA certificate.")
+        .AddArgument<string>("CommonName", argument =>
+            argument.AddHelpName("Common Name")
+                .AddDescription("Add a common name to the certificate's subject name.")
+            )
+        .AddOption<string[]>("-ou", option =>
+            option.AddAlias("--organizational-unit")
+                .AddDescription("Add one or more OUs to the certificate's subject name.")
+            )
+        .AddOption<string?>("-o", option =>
+            option.AddAlias("--organization")
+                .AddDescription("Add an Organization to the certificate's subject name.")
+            )
+        .AddOption<string?>("-c", option =>
+            option.AddAlias("--country")
+                .AddDescription("Add an Organization to the certificate's subject name.")
+            )
+        .AddOption<string>("-fp", option =>
+            option.AddAlias("--file-path")
+                .AddDescription("Override the default export path for the root CA.")
+                .AddDefaultValueFactory(() => Path.Combine(Environment.CurrentDirectory, "rootca.pfx"))
+            )
+        .AddOption<DateOnly>("-nb", option =>
+            option.AddAlias("--not-before")
+                .AddDescription("Add a date that the certificate cannot be used before.")
+                .AddDefaultValue(DateOnly.FromDateTime(DateTime.UtcNow))
+            )
+        .AddOption<DateOnly>("-na", option =>
+            option.AddAlias("--not-after")
+                .AddDescription("Add a date that the certificate cannot be used after.")
+                .AddDefaultValue(DateOnly.FromDateTime(DateTime.UtcNow.AddYears(10)))
+            )
+        .AddOption<int>("-rsa", option =>
+            option.AddAlias("--rsa-size-in-bits")
+                .AddDescription("Change the default RSA size (as measured in bits).")
+                .AddDefaultValue(2048)
+            )
+        ;
+});
+
+
+app.AddCommand("intermediateCA", commandOptions => {
+    commandOptions
+        .MapHandler<IntermediateCaGenerator>(h => h.GenerateCaAsync)
+        .AddCommandDescription("Create an intermediate CA certificate")
+
+        .AddArgument<string>("CommonName", argument =>
+            argument.AddHelpName("Common Name")
+                .AddDescription("Add a common name to the certificate's subject name.")
+            )
+        .AddArgument<string>("IssuerFilePath", argument => 
+            argument.AddHelpName("Issuer File Path")
+                .AddDescription("Add the file path to the Issuer CA.")
+            )
+        .AddOption<string[]>("-ou", option =>
+            option.AddAlias("--organizational-unit")
+                .AddDescription("Add one or more OUs to the certificate's subject name.")
+            )
+        .AddOption<string?>("-o", option =>
+            option.AddAlias("--organization")
+                .AddDescription("Add an Organization to the certificate's subject name.")
+            )
+        .AddOption<string?>("-c", option =>
+            option.AddAlias("--country")
+                .AddDescription("Add an Organization to the certificate's subject name.")
+            )
+        .AddOption<string>("-fp", option =>
+            option.AddAlias("--file-path")
+                .AddDescription("Override the default export path for the root CA.")
+                .AddDefaultValueFactory(() => Path.Combine(Environment.CurrentDirectory, "rootca.pfx"))
+            )
+        .AddOption<DateOnly>("-nb", option =>
+            option.AddAlias("--not-before")
+                .AddDescription("Add a date that the certificate cannot be used before.")
+                .AddDefaultValue(DateOnly.FromDateTime(DateTime.UtcNow))
+            )
+        .AddOption<DateOnly>("-na", option =>
+            option.AddAlias("--not-after")
+                .AddDescription("Add a date that the certificate cannot be used after.")
+                .AddDefaultValue(DateOnly.FromDateTime(DateTime.UtcNow.AddYears(5)))
+            )
+        .AddOption<int>("-rsa", option =>
+            option.AddAlias("--rsa-size-in-bits")
+                .AddDescription("Change the default RSA size (as measured in bits).")
+                .AddDefaultValue(2048)
+            );
+});
+
+
+app.AddCommand("ssl", commandOptions => {
+    commandOptions
+        .MapHandler<SSLCertificateGenerator>(h => h.GenerateSslCertAsync)
+        .AddCommandDescription("Create an SSL certificate.")
+
+        .AddArgument<string>("CommonName", argument =>
+            argument.AddHelpName("Common Name")
+                .AddDescription("Add a common name to the certificate's subject name.")
+            )
+        .AddArgument<string>("IssuerFilePath", argument =>
+            argument.AddHelpName("Issuer File Path")
+                .AddDescription("Add the file path to the Issuer CA.")
+            )
+        .AddOption<string[]>("-dns", option =>
+            option.AddAlias("--dns-name")
+                .AddDescription("Add one or more DNS names.")
+            )
+        .AddOption<string>("-ip", option =>
+            option.AddAlias("--ip-addresses")
+                .AddDescription("Add one or more IP Addresses.")
+            )
+        .AddOption<string[]>("-ou", option =>
+            option.AddAlias("--organizational-unit")
+                .AddDescription("Add one or more OUs to the certificate's subject name.")
+            )
+        .AddOption<string?>("-o", option =>
+            option.AddAlias("--organization")
+                .AddDescription("Add an Organization to the certificate's subject name.")
+            )
+        .AddOption<string?>("-c", option =>
+            option.AddAlias("--country")
+                .AddDescription("Add an Organization to the certificate's subject name.")
+            )
+        .AddOption<string>("-pub", option =>
+            option.AddAlias("--public-file-path")
+                .AddDescription("Override the default export path for the public certificate.")
+                .AddDefaultValueFactory(() => Path.Combine(Environment.CurrentDirectory, "ssl-pub.pfx"))
+            )
+        .AddOption<string>("-prv", option =>
+            option.AddAlias("--private-file-path")
+                .AddDescription("Override the default export path for the private certificate.")
+                .AddDefaultValueFactory(() => Path.Combine(Environment.CurrentDirectory, "ssl-prv.pfx"))
+            )
+        .AddOption<DateOnly>("-nb", option =>
+            option.AddAlias("--not-before")
+                .AddDescription("Add a date that the certificate cannot be used before.")
+                .AddDefaultValue(DateOnly.FromDateTime(DateTime.UtcNow))
+            )
+        .AddOption<DateOnly>("-na", option =>
+            option.AddAlias("--not-after")
+                .AddDescription("Add a date that the certificate cannot be used after.")
+                .AddDefaultValue(DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)))
+            )
+        .AddOption<int>("-rsa", option =>
+            option.AddAlias("--rsa-size-in-bits")
+                .AddDescription("Change the default RSA size (as measured in bits).")
+                .AddDefaultValue(2048)
+            );
+});
+
+app.Execute(args);
