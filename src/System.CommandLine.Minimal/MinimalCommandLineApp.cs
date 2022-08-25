@@ -51,11 +51,20 @@ public class MinimalCommandLineApp
     }
 
     public MinimalCommandLineApp MapCommand<THandler>(
-        string commandName, 
-        Action<CommandBuilder> cmdOptions
+        string commandName,
+        Func<THandler, Delegate> handler,
+        Action<CommandBuilder<THandler>> cmdOptions
         )
     {
-        
+        var cmd = new Command(commandName);
+        var builder = new CommandBuilder<THandler>(cmd, Services);
+        builder.DelegateLocator = handler;
+
+        cmd.SetHandler(builder.handlerActivator);
+
+        RootCommand.AddCommand(builder.Command);
+
+        return this;
     }
 
     public MinimalCommandLineApp AddCommand(string commandName, Action<CommandBuilder> cmdOptions)

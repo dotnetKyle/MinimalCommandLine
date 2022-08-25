@@ -15,10 +15,11 @@ var app = builder.Build();
 
 app.AddRootDescription("Commands for creating certificates.");
 
-
-app.AddCommand("rootCA", commandOptions => {
-    commandOptions
-        .MapHandler<RootCaGenerator>(h => h.GenerateRootCaAsync)
+app.MapCommand<RootCaGenerator>("rootCA", 
+    handler => handler.GenerateRootCaAsync,
+    commandOptions => 
+    { 
+        commandOptions
         .AddCommandDescription("Create a self-signed root CA certificate.")
         .AddArgument<string>("CommonName", argument =>
             argument.AddHelpName("Common Name")
