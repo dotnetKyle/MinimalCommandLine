@@ -10,9 +10,9 @@ namespace DemoApp.Services;
 
 public class RootCaGenerator
 {
-	public async Task GenerateRootCaAsync(
+	public static async Task GenerateRootCaAsync(
 		string commonName,
-		string[] OUs,
+		string[]? OUs = null,
 		string? organization = null,
 		string? country = null,
 		string? filePath = null,
@@ -20,6 +20,8 @@ public class RootCaGenerator
         DateOnly? notAfterDate = null,
         int rsaSizeInBits = 2048)
 	{
+		if (OUs is null)
+			OUs = Array.Empty<string>();
         if (notBeforeDate is null)
             notBeforeDate = DateOnly.FromDateTime(DateTime.UtcNow);
         if (notAfterDate is null)
@@ -34,8 +36,10 @@ public class RootCaGenerator
 		{
 			var directory = Path.GetDirectoryName(filePath);
 			if (!Directory.Exists(directory))
+			{
 				Console.WriteLine($"Directory \"{directory}\" does not exist.");			
-			return;
+				return;
+			}
 		}
 
 		var subjectName = $"CN={commonName}";
@@ -55,6 +59,10 @@ public class RootCaGenerator
 				HashAlgorithmName.SHA256, 
 				RSASignaturePadding.Pkcs1);
 
+			req.CertificateExtensions.Add(
+				new X509BasicConstraintsExtension(true, false, 0, true)
+			);
+
 			using (var cert = req.CreateSelfSigned(
                 notBeforeDate.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
                 notAfterDate.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)
@@ -64,6 +72,8 @@ public class RootCaGenerator
 				var pfx = cert.Export(X509ContentType.Pfx);
 
 				await File.WriteAllBytesAsync(filePath, pfx);
+
+				Console.WriteLine(filePath);
 			}
 		}
 	}

@@ -16,7 +16,7 @@ public class SSLCertificateGenerator
         string commonName,
         string issuerFilePath,
         string[] DNSNames,
-        byte[] IPAddresses,
+        string[] IPAddresses,
         string[] OUs,
         string? organization = null,
         string? country = null,
@@ -40,8 +40,10 @@ public class SSLCertificateGenerator
         {
             var directory = Path.GetDirectoryName(public_filePath);
             if (!Directory.Exists(directory))
+            {
                 Console.WriteLine($"Directory \"{directory}\" does not exist.");
-            return;
+                return;
+            }
         }
 
         if(private_filePath is null)
@@ -53,8 +55,10 @@ public class SSLCertificateGenerator
         {
             var directory = Path.GetDirectoryName(private_filePath);
             if (!Directory.Exists(directory))
+            {
                 Console.WriteLine($"Directory \"{directory}\" does not exist.");
-            return;
+                return;
+            }
         }
 
         if (public_filePath == private_filePath)
@@ -94,11 +98,30 @@ public class SSLCertificateGenerator
                 HashAlgorithmName.SHA256,
                 RSASignaturePadding.Pkcs1);
 
+            req.CertificateExtensions.Add(
+                new X509BasicConstraintsExtension(false, false, 0, false)
+            );
+
             var SAN = new SubjectAlternativeNameBuilder();
             foreach (var dnsName in DNSNames)
                 SAN.AddDnsName(dnsName);
             foreach (var ipaddress in IPAddresses)
-                SAN.AddIpAddress(new IPAddress(ipaddress));
+            {
+                var parts = ipaddress.Split('.');
+                var bytes = new List<byte>();
+                foreach(var b in parts)
+                {
+                    if (byte.TryParse(b, out var byt))
+                        bytes.Add(byt);
+                    else
+                        throw new FormatException("IP Address is not in the correct format.");
+                }
+
+                if(bytes.Count != 4)
+                    throw new FormatException("IP Address is not in the correct format.");
+
+                SAN.AddIpAddress(new IPAddress(bytes.ToArray()));
+            }
             req.CertificateExtensions.Add(SAN.Build());
 
             var serial = _serialNumberProvider.GetNextSerialNumber();
@@ -116,6 +139,9 @@ public class SSLCertificateGenerator
                 var task1 = File.WriteAllBytesAsync(private_filePath, privatePfx);
                 var task2 = File.WriteAllBytesAsync(public_filePath, pfx);
                 await Task.WhenAll(task1, task2);
+
+                Console.WriteLine(private_filePath);
+                Console.WriteLine(public_filePath);
             }
         }
     }

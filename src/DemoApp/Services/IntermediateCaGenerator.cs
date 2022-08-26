@@ -36,8 +36,10 @@ public class IntermediateCaGenerator
         {
             var directory = Path.GetDirectoryName(filePath);
             if (!Directory.Exists(directory))
+            {
                 Console.WriteLine($"Directory \"{directory}\" does not exist.");
-            return;
+                return;
+            }
         }
 
         if(!File.Exists(issuerFilePath))
@@ -71,6 +73,10 @@ public class IntermediateCaGenerator
                 HashAlgorithmName.SHA256,
                 RSASignaturePadding.Pkcs1);
 
+            req.CertificateExtensions.Add(
+                new X509BasicConstraintsExtension(true, false, 0, true)
+            );
+
             var serial = _serialNumberProvider.GetNextSerialNumber();
 
             using (var cert = req.Create(rootCA,
@@ -78,9 +84,13 @@ public class IntermediateCaGenerator
                 notAfterDate.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
                 serial))
             {
-                var pfx = cert.Export(X509ContentType.Pfx);
+                var certWithPrivate = cert.CopyWithPrivateKey(rsa);
+                
+                var pfx = certWithPrivate.Export(X509ContentType.Pfx);
 
                 await File.WriteAllBytesAsync(filePath, pfx);
+
+                Console.WriteLine(filePath);
             }
         }
     }

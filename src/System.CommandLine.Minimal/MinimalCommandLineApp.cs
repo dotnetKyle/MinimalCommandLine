@@ -54,12 +54,12 @@ public class MinimalCommandLineApp
         string commandName,
         Func<THandler, Delegate> handler,
         Action<CommandBuilder<THandler>> cmdOptions
-        )
+        ) 
+        where THandler : notnull
     {
         var cmd = new Command(commandName);
-        var builder = new CommandBuilder<THandler>(cmd, Services);
-        builder.DelegateLocator = handler;
-
+        var builder = new CommandBuilder<THandler>(cmd, Services, handler);
+        cmdOptions(builder);
         cmd.SetHandler(builder.handlerActivator);
 
         RootCommand.AddCommand(builder.Command);
@@ -70,7 +70,7 @@ public class MinimalCommandLineApp
     public MinimalCommandLineApp AddCommand(string commandName, Action<CommandBuilder> cmdOptions)
     {
         var cmd = new Command(commandName);
-        var opt = new CommandBuilder(cmd, Services);                cmdOptions(opt);
+        var opt = new CommandBuilder(cmd);                cmdOptions(opt);
         RootCommand.AddCommand(opt.Command);        
         return this;
     }
