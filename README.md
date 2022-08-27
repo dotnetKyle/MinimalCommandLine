@@ -39,7 +39,7 @@ DemoApp.exe -h
 The API and the application logic are together.  Uses an `Action<Task>` directly in the Program.cs.
 
 ```csharp
-var app = new MinimalCommandLineAppBuilder()
+var app = new MinimalCommandLineBuilder()
   .Build();
 
 app.AddRootDescription("Create X509Certificates.");
@@ -113,7 +113,7 @@ Same logic as above but inside a static method allows for the parameters to
 have optional values (which are automatically to the API help convention).
 
 ```csharp
-var app = new MinimalCommandLineAppBuilder()
+var app = new MinimalCommandLineBuilder()
   .Build();
 
 app.AddRootDescription("Create X509Certificates.");
@@ -158,7 +158,7 @@ Uses a class instance and gets dependencies from DI.
 
 ```csharp
 // add the command and it's dependencies to DI
-var app = new MinimalCommandLineAppBuilder()
+var app = new MinimalCommandLineBuilder()
   .AddTransient<ISerialNumberProvider, FileSystemSerialNumberProvider>()
   .AddTransient<IntermediateCaGenerator>()
   .Build();
