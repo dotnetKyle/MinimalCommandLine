@@ -8,8 +8,9 @@
 > 
 > The primary goal of this library design is to give the developer 
 > the option to use one of the following approaches:
->  * **Separate Approach:** Separate the API design from the actual logic, which allows for high testability.
->  * **Inline Approach:** To put the logic directly with the API design, which allows for maximum readability.
+>  * **[Inline Approach](#inline-approach):** To put the logic directly with the API design, which allows for maximum readability.
+>  * **[Separate Approach (static class)](#separate-approach-static-class):** Separate the API design from the actual logic using a static handler, which allows for high testability.
+>  * **[Separate Approach (instance class)](#separate-approach-instance-class-with-dependency-injection):** Separate the API from the logic using an instance class, which allows for dependency injection and high testability.
 
 ## Getting Started
 
