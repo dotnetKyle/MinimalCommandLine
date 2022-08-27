@@ -146,7 +146,7 @@ public static class RootCaGenerator
       string[] OUs, 
       string organization = "Your Org Here")
   {
-    // Truncated for berevity
+    // Truncated for brevity
   }
 }
 ```
@@ -178,10 +178,10 @@ app.MapCommand<IntermediateCaGenerator>("intermediateCA",
       )
       .AddArgument<string>("IssuerCertificate", argument =>
         argument.AddHelpName("Issuer Certificate")
-          .AddDescription("Add an issuer certificate with it's private key.")
+          .AddDescription("Add an issuer certificate with its private key.")
       )
       .AddOption<string[]>("-ou", option =>
-        // truncated for berevity
+        // truncated for brevity
     });
 
 public class IntermediateCaGenerator
@@ -195,11 +195,11 @@ public class IntermediateCaGenerator
   public async Task GenerateCaAsync(string commonName, string issuerFilePath)
   {
     var certificateSerialNumber = _serialNumberProvider.NextSerialNumber();
-    // Truncated for berevity
+    // Truncated for brevity
   }
 }
 public class FileSystemSerialNumberProvider : IFileSystemSerialNumberProvider
 {
-  // Truncated for berevity
+  // Truncated for brevity
 }
 ```
