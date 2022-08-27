@@ -33,9 +33,9 @@ DemoApp.exe -h
 
 ## Simple Examples:
 
-### API and Logic Together:
+### Inline Approach:
 
-Uses an `Action<Task>` directly in the Program.cs.
+The API and the application logic are together.  Uses an `Action<Task>` directly in the Program.cs.
 
 ```csharp
 var app = new MinimalCommandLineAppBuilder()
@@ -103,9 +103,9 @@ app.AddCommand("rootCA"
 	});
 ```
 
-### Separate API from Logic:
+### Separate Approach (static class):
 
-Same code as above but inside a static method allows for the parameters to have optional values (which are automatically to the API help convention).
+Same logic as above but inside a static method allows for the parameters to have optional values (which are automatically to the API help convention).
 
 ```csharp
 var app = new MinimalCommandLineAppBuilder()
@@ -127,17 +127,24 @@ app.AddCommand("rootCA"
                 option.AddAlias("--organizational-unit")
                     .AddDescription("Add one or more OUs to the certificate's subject name.")
                 )
-            .AddOption<DateOnly>("-na", option =>
-                option.AddAlias("--not-after")
-                    .AddDescription("Add a date that the certificate cannot be used after.")
-                    .AddDefaultValue(DateOnly.FromDateTime(DateTime.UtcNow.AddYears(10)))
+            .AddOption<string>("-o", option =>
+                option.AddAlias("--organization")
+                    .AddDescription("Override the default organization name.")
                 )
             // Use a static method for the logic
             .SetHandler(RootCaGenerator.GenerateSelfSigned);
     });
+
+public static class RootCaGenerator
+{
+    public static async Task GenerateSelfSigned(string commonName, string[] OUs, string organization = "Your Org Here")
+    {
+        // Truncated for berevity
+    }
+}
 ```
 
-### Dependency Injection:
+### Separate Approach (instance class with dependency injection):
 
 Uses a class instance and gets dependencies from DI.
 
