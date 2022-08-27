@@ -8,8 +8,8 @@
 > 
 > The primary goal of this library design is to give the developer 
 > the option to use one of the following approaches:
->  * **Separate Approach:** Separate the api design from the actual logic which allows for high testability.
->  * **Inline Approach:** To put the logic directly with the api design, which allows for maximum readability.
+>  * **Separate Approach:** Separate the API design from the actual logic, which allows for high testability.
+>  * **Inline Approach:** To put the logic directly with the API design, which allows for maximum readability.
 
 ## Getting Started
 
@@ -19,7 +19,7 @@
 
 Set DemoApp as the startup project.
 
-Check the Properties/launchSettings.json file, ensure that the `commandLineArgs` are set to `-h`
+Check the Properties/launchSettings.json file, ensure that the `commandLineArgs` property is set to `-h`
 
 ### Using the dotnet CLI:
 
@@ -43,7 +43,7 @@ var app = new MinimalCommandLineAppBuilder()
 
 app.AddRootDescription("Create X509Certificates.");
 
-// generate a rootCA certificate
+// generate a root CA certificate
 app.AddCommand("rootCA"
 	cmdOptions => 
 	{
@@ -55,7 +55,7 @@ app.AddCommand("rootCA"
 			)
             .AddOption<string[]>("-ou", option =>
                 option.AddAlias("--organizational-unit")
-                    .AddDescription("Add one or more OUs to the certificate's subject name.")
+                    .AddDescription("Add one or more Organizational Units (OUs) to the certificate's subject name.")
                 )
             .AddOption<DateOnly>("-na", option =>
                 option.AddAlias("--not-after")
