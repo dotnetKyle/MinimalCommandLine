@@ -109,7 +109,12 @@ public class MinimalCommandLineApp
         foreach (var opt in RootCommand.Options)
         {
             var argVal = context.ParseResult.GetValueForOption(opt);
-            dynamicArguments.Add(argVal);
+            if(opt.Name != "version" 
+                && !opt.HasAlias("--version")
+                && opt.Name != "help")
+            {
+                dynamicArguments.Add(argVal);
+            }
         }
 
         // run the method based on the return type
