@@ -2,9 +2,9 @@
   "profiles": {
     "DemoApp": {
       "commandName": "Project",
-      //"commandLineArgs": "-h"
+      "commandLineArgs": "-h"
       //"commandLineArgs": "rootCA -h"
-      "commandLineArgs": "rootCA \"Test Root CA\" -ou OU1 -ou OU2 -na 08/27/2032"
+      //"commandLineArgs": "rootCA \"Test Root CA\" -ou OU1 -ou OU2 -na 08/27/2032"
       //"commandLineArgs": "rootCA \"Test Root CA\" -ou OU1 -ou OU2 -o Org -c USA -fp C:/TestCerts/root.pfx -nb 05/17/2022 -na 05/17/2032 -rsa 4096",
       //"commandLineArgs": "intermediateCA \"Test Intermediate CA\" \"C:/TestCerts/root.pfx\" -ou OU1 -ou OU2 -o Org -c USA -fp C:/TestCerts/intermediate.pfx -nb 8/25/2022 -na 8/25/2027 -rsa 4096"
       //"commandLineArgs": "ssl \"SSL Cert\" \"C:/TestCerts/intermediate.pfx\" -dns test.mywebsite.com -dns *.mywebsite.com -ip 12.13.14.15 -ip 12.13.14.16 -ou OU1 -ou OU2 -o Org -c USA -pub C:/TestCerts/ssl-public.pfx -prv C:/TestCerts/ssl-private.pfx -nb 8/25/2022 -na 8/25/2023 -rsa 4096"
