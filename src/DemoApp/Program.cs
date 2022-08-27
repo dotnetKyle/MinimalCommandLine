@@ -1,6 +1,8 @@
 ﻿using DemoApp.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System.CommandLine.Minimal;
+using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography;
 
 var builder = new MinimalCommandLineAppBuilder();
 
@@ -19,44 +21,44 @@ app.AddCommand("rootCA",
     commandOptions => 
     {
         commandOptions
-        .AddCommandDescription("Create a self-signed root CA certificate.")
-        .AddArgument<string>("CommonName", argument =>
-            argument.AddHelpName("Common Name")
-                .AddDescription("Add a common name to the certificate's subject name.")
-            )
-        .AddOption<string[]>("-ou", option =>
-            option.AddAlias("--organizational-unit")
-                .AddDescription("Add one or more OUs to the certificate's subject name.")
-            )
-        .AddOption<string?>("-o", option =>
-            option.AddAlias("--organization")
-                .AddDescription("Add an Organization to the certificate's subject name.")
-            )
-        .AddOption<string?>("-c", option =>
-            option.AddAlias("--country")
-                .AddDescription("Add an Organization to the certificate's subject name.")
-            )
-        .AddOption<string>("-fp", option =>
-            option.AddAlias("--file-path")
-                .AddDescription("Override the default export path for the root CA.")
-                .AddDefaultValueFactory(() => Path.Combine(Environment.CurrentDirectory, "rootca.pfx"))
-            )
-        .AddOption<DateOnly?>("-nb", option =>
-            option.AddAlias("--not-before")
-                .AddDescription("Add a date that the certificate cannot be used before.")
-                .AddDefaultValue(DateOnly.FromDateTime(DateTime.UtcNow))
-            )
-        .AddOption<DateOnly?>("-na", option =>
-            option.AddAlias("--not-after")
-                .AddDescription("Add a date that the certificate cannot be used after.")
-                .AddDefaultValue(DateOnly.FromDateTime(DateTime.UtcNow.AddYears(10)))
-            )
-        .AddOption<int>("-rsa", option =>
-            option.AddAlias("--rsa-size-in-bits")
-                .AddDescription("Change the default RSA size (as measured in bits).")
-                .AddDefaultValue(2048)
-            )
-        .SetHandler(RootCaGenerator.GenerateRootCaAsync);
+            .AddCommandDescription("Create a self-signed root CA certificate.")
+            .AddArgument<string>("CommonName", argument =>
+                argument.AddHelpName("Common Name")
+                    .AddDescription("Add a common name to the certificate's subject name.")
+                )
+            .AddOption<string[]>("-ou", option =>
+                option.AddAlias("--organizational-unit")
+                    .AddDescription("Add one or more OUs to the certificate's subject name.")
+                )
+            .AddOption<string?>("-o", option =>
+                option.AddAlias("--organization")
+                    .AddDescription("Add an Organization to the certificate's subject name.")
+                )
+            .AddOption<string?>("-c", option =>
+                option.AddAlias("--country")
+                    .AddDescription("Add an Organization to the certificate's subject name.")
+                )
+            .AddOption<string>("-fp", option =>
+                option.AddAlias("--file-path")
+                    .AddDescription("Override the default export path for the root CA.")
+                    .AddDefaultValueFactory(() => Path.Combine(Environment.CurrentDirectory, "rootca.pfx"))
+                )
+            .AddOption<DateOnly?>("-nb", option =>
+                option.AddAlias("--not-before")
+                    .AddDescription("Add a date that the certificate cannot be used before.")
+                    .AddDefaultValue(DateOnly.FromDateTime(DateTime.UtcNow))
+                )
+            .AddOption<DateOnly>("-na", option =>
+                option.AddAlias("--not-after")
+                    .AddDescription("Add a date that the certificate cannot be used after.")
+                    .AddDefaultValue(DateOnly.FromDateTime(DateTime.UtcNow.AddYears(10)))
+                )
+            .AddOption<int>("-rsa", option =>
+                option.AddAlias("--rsa-size-in-bits")
+                    .AddDescription("Change the default RSA size (as measured in bits).")
+                    .AddDefaultValue(2048)
+                )
+            .SetHandler(RootCaGenerator.GenerateRootCaAsync);
     });
 
 
