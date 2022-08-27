@@ -12,6 +12,29 @@
 >  * **[Separate Approach (static class)](#separate-approach-static-class):** Separate the API design from the actual logic using a static handler, which allows for high testability.
 >  * **[Separate Approach (instance class)](#separate-approach-instance-class-with-dependency-injection):** Separate the API from the logic using an instance class, which allows for dependency injection and high testability.
 
+### Hello World:
+
+```csharp
+using System.CommandLine.Minimal;
+
+var app = new MinimalCommandLineBuilder()
+    .Build();
+
+app.AddRootDescription("A simple demo app for the command line.")
+    .AddRootArgument<string>("Message")
+    .AddRootOption<string>("--first-option", opt => opt.AddAlias("-o1"))
+    .AddRootOption<string>("--second-option")
+    .SetRootHandler(
+        (string message, string option1, string option2) =>
+        {
+            Console.WriteLine($"Hello World!  {message}");
+            Console.WriteLine($"  Option 1:{option1}, Option2 {option2}");
+        }
+    );
+
+app.Execute(args);
+```
+
 ## Getting Started
 
 `git clone https://github.com/dotnetKyle/MinimalCommandLine.git`
@@ -39,7 +62,7 @@ DemoApp.exe -h
 The API and the application logic are together.  Uses an `Action<Task>` directly in the Program.cs.
 
 ```csharp
-var app = new MinimalCommandLineAppBuilder()
+var app = new MinimalCommandLineBuilder()
   .Build();
 
 app.AddRootDescription("Create X509Certificates.");
@@ -113,7 +136,7 @@ Same logic as above but inside a static method allows for the parameters to
 have optional values (which are automatically to the API help convention).
 
 ```csharp
-var app = new MinimalCommandLineAppBuilder()
+var app = new MinimalCommandLineBuilder()
   .Build();
 
 app.AddRootDescription("Create X509Certificates.");
@@ -158,7 +181,7 @@ Uses a class instance and gets dependencies from DI.
 
 ```csharp
 // add the command and it's dependencies to DI
-var app = new MinimalCommandLineAppBuilder()
+var app = new MinimalCommandLineBuilder()
   .AddTransient<ISerialNumberProvider, FileSystemSerialNumberProvider>()
   .AddTransient<IntermediateCaGenerator>()
   .Build();

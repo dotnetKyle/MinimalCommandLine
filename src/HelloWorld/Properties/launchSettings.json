@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DemoApp2": {
+      "commandName": "Project",
+      "commandLineArgs": "\"Hello everybody..\" -o1 \"My Option 1\" --second-option \"My Option 2\""
+    }
+  }
+}
