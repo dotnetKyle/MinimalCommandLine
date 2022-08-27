@@ -55,7 +55,9 @@ app.AddCommand("rootCA"
       )
         .AddOption<string[]>("-ou", option =>
           option.AddAlias("--organizational-unit")
-            .AddDescription("Add one or more Organizational Units (OUs) to the certificate's subject name.")
+            .AddDescription(
+              "Add one or more Organizational Units (OUs) to the certificate's subject name."
+            )
           )
         .AddOption<DateOnly>("-na", option =>
           option.AddAlias("--not-after")
@@ -105,7 +107,8 @@ app.AddCommand("rootCA"
 
 ### Separate Approach (static class):
 
-Same logic as above but inside a static method allows for the parameters to have optional values (which are automatically to the API help convention).
+Same logic as above but inside a static method allows for the parameters to 
+have optional values (which are automatically to the API help convention).
 
 ```csharp
 var app = new MinimalCommandLineAppBuilder()
@@ -137,7 +140,10 @@ app.AddCommand("rootCA"
 
 public static class RootCaGenerator
 {
-  public static async Task GenerateSelfSigned(string commonName, string[] OUs, string organization = "Your Org Here")
+  public static async Task GenerateSelfSigned(
+      string commonName, 
+      string[] OUs, 
+      string organization = "Your Org Here")
   {
     // Truncated for berevity
   }
