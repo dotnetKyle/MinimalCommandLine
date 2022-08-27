@@ -1,15 +1,15 @@
 # System.CommandLine.Minimal
 
-A set of minimal builders that sits on top of the 
-`System.CommandLine` namespace to give an experience 
-similar to the ASP.Net Core minimal API builders.
-
-### Primary Goal:
-
-The primary goal of this library design is to give the developer 
-the option to separate the api design from the actual 
-logic of the commands or to put it directly with the api 
-design.
+> A set of minimal builders that sits on top of the 
+> `System.CommandLine` namespace to give an experience 
+> similar to the ASP.Net Core minimal API builders.
+> 
+> ### Primary Goal:
+> 
+> The primary goal of this library design is to give the developer 
+> the option to use one of the following approaches:
+>  * **Separate Approach:** Separate the api design from the actual logic which allows for high testability.
+>  * **Inline Approach:** To put the logic directly with the api design, which allows for maximum readability.
 
 ## Getting Started
 
