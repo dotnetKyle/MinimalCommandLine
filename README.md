@@ -64,6 +64,7 @@ app.AddCommand("rootCA"
             .AddDescription("Add a date that the certificate cannot be used after.")
             .AddDefaultValue(DateOnly.FromDateTime(DateTime.UtcNow.AddYears(10)))
           )
+        // Bind the application logic here
         .SetHandler(async (string commonName, string[] OUs, DateOnly notAfter) =>
         {
           var notAfterDate = notAfter.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
@@ -134,7 +135,7 @@ app.AddCommand("rootCA"
           option.AddAlias("--organization")
             .AddDescription("Override the default organization name.")
           )
-        // Use a static method for the logic
+        // Use a static method for the application logic
         .SetHandler(RootCaGenerator.GenerateSelfSigned);
     });
 
@@ -165,7 +166,7 @@ app.AddRootDescription("Create X509Certificates.");
 
 // generate a intermediateCA certificate
 app.MapCommand<IntermediateCaGenerator>("intermediateCA", 
-  // this parameter is a binder to map the command to the instance method
+  // this parameter is a binder to map the command to the instance method containing the application logic
   handler => handler.GenerateCaAsync,
   cmdOptions => 
   {
