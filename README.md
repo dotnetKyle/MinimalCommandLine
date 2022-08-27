@@ -4,12 +4,32 @@ A set of minimal builders that sits on top of the
 `System.CommandLine` namespace to give an experience 
 similar to the ASP.Net Core minimal API builders.
 
-## Primary Goal
+### Primary Goal:
 
-The primary goal of this library is to give the developer 
+The primary goal of this library design is to give the developer 
 the option to separate the api design from the actual 
 logic of the commands or to put it directly with the api 
 design.
+
+## Getting Started
+
+`git clone https://github.com/dotnetKyle/MinimalCommandLine.git`
+
+### Using Visual Studio:
+
+Set DemoApp as the startup project.
+
+Check the Properties/launchSettings.json file, ensure that the `commandLineArgs` are set to `-h`
+
+### Using the dotnet CLI:
+
+```shell
+dotnet build DemoApp.csproj -c Debug
+
+cd \bin\Debug\net6.0\
+
+DemoApp.exe -h
+```
 
 ## Simple Examples:
 
