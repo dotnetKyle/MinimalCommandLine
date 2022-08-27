@@ -3,9 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace System.CommandLine.Minimal;
 
-public class MinimalCommandLineAppBuilder
+public class MinimalCommandLineBuilder
 {
-    public MinimalCommandLineAppBuilder()
+    public MinimalCommandLineBuilder()
     {
         Services = new ServiceCollection();
         ConfigurationManager = new ConfigurationManager();

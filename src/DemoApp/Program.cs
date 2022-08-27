@@ -4,7 +4,7 @@ using System.CommandLine.Minimal;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
 
-var builder = new MinimalCommandLineAppBuilder();
+var builder = new MinimalCommandLineBuilder();
 
 
 builder.Services
