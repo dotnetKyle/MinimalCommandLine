@@ -12,11 +12,9 @@ public class CommandBuilder<THandler>
     IServiceProvider _serviceProvider;
     internal Command Command;
 
-    internal CommandBuilder(
-        Command cmd,
-        IServiceProvider serviceProvider
-        , Func<THandler, Delegate> delegateLocator
-        )
+    internal CommandBuilder(Command cmd,
+        IServiceProvider serviceProvider,
+        Func<THandler, Delegate> delegateLocator)
     {
         Command = cmd;
         _serviceProvider = serviceProvider;
@@ -106,10 +104,4 @@ public class CommandBuilder<THandler>
             throw new NotSupportedException($"A handler of type {returnType} is not supported.");
         }
     }
-
-    //public void MapHandler<THandler>(Func<THandler, Delegate> delegateLocator)
-    //    where THandler : notnull
-    //{
-    //    DelegateLocator = delegateLocator;
-    //}
 }
