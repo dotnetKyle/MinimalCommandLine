@@ -16,7 +16,13 @@ jobs:
         dotnet-version: 6.0.x
         
     - name: Restore dependencies
-      run: dotnet restore src/System.CommandLine.Minimal/System.CommandLine.Minimal.csproj
+      run: dotnet restore src/System.CommandLine.Minimal.sln
       
     - name: Build Minimal CommandLine
       run: dotnet build src/System.CommandLine.Minimal/System.CommandLine.Minimal.csproj -c Release --no-restore -f netstandard2.0
+      
+    - name: Build HelloWorld Demo
+      run: dotnet build src/HelloWorld/HelloWorld.csproj -c Release --no-restore -f net6.0
+
+    - name: Test HelloWorld Demo
+      run: dotnet run --project src/HelloWorld/HelloWorld.csproj --no-build --no-restore -c Release -f net6.0 -- "My Message" --first-option "Test1" --second-option "Test2"
