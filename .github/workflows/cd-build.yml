@@ -1,0 +1,67 @@
+name: CD-Build
+
+on:
+  push:
+    # Runs on all branches so they share a github.run_number increment
+    branches: [ stable ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+        
+    - name: Restore dependencies
+      run: dotnet restore src/System.CommandLine.Minimal.sln
+      
+    - name: Build Minimal CommandLine
+      run: dotnet build src/System.CommandLine.Minimal.sln -c Release --no-restore -f netstandard2.0
+      
+      # packs all nuget packages at once 
+    - name: Pack MinimalCommandLine Nuget Alpha
+      run: dotnet pack src/System.CommandLine.Minimal/System.CommandLine.Minimal.csproj -c Release --no-build -p:PackageVersion=0.0.${{github.run_number}}-alpha
+    - name: Pack MinimalCommandLine Nuget
+      run: dotnet pack src/System.CommandLine.Minimal/System.CommandLine.Minimal.csproj -c Release --no-build -p:PackageVersion=0.0.${{github.run_number}}
+      
+    - name: Publish MinimalCommandLine Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Nugets
+        path: src/**/bin/**/*.nupkg
+        
+  integration:
+    needs: build
+    name: Deploy Nuget-alpha packages
+    environment:
+      name: Integration
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download nugets
+      uses: actions/download-artifact@v2
+      with:
+        name: Nugets
+      
+      
+    - name: Display structure of downloaded files
+      run: ls -R
+    - name: Push MinimalMongo Nuget
+      run: dotnet nuget push ./System.CommandLine.Minimal/bin/Release/MinimalCommandLine.0.0.${{github.run_number}}-alpha.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
+
+  production:
+    needs: integration
+    name: Deploy Nuget packages to production
+    environment:
+      name: Production
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download nugets
+      uses: actions/download-artifact@v2
+      with:
+        name: Nugets
+        
+    - name: Push MinimalMongo Nuget
+      run: dotnet nuget push ./System.CommandLine.Minimal/bin/Release/MinimalCommandLine.0.0.${{github.run_number}}.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
