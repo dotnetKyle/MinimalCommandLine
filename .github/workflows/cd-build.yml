@@ -48,7 +48,7 @@ jobs:
       
     - name: Display structure of downloaded files
       run: ls -R
-    - name: Push MinimalMongo Nuget
+    - name: Push MinimalCommandLine Nuget
       run: dotnet nuget push ./System.CommandLine.Minimal/bin/Release/MinimalCommandLine.0.0.${{github.run_number}}-alpha.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
 
   production:
@@ -63,5 +63,5 @@ jobs:
       with:
         name: Nugets
         
-    - name: Push MinimalMongo Nuget
+    - name: Push MinimalCommandLine Nuget
       run: dotnet nuget push ./System.CommandLine.Minimal/bin/Release/MinimalCommandLine.0.0.${{github.run_number}}.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
