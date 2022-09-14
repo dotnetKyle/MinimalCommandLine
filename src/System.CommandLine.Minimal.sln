@@ -9,6 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.CommandLine.Minimal"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{14529171-0525-4EF0-B11E-40129813AD44}"
 	ProjectSection(SolutionItems) = preProject
+		..\.github\workflows\pr-build.yml = ..\.github\workflows\pr-build.yml
 		..\README.md = ..\README.md
 		..\.github\workflows\cd-build.yml = ..\.github\workflows\cd-build.yml
 	EndProjectSection

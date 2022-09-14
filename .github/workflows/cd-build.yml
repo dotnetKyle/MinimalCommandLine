@@ -19,7 +19,7 @@ jobs:
       run: dotnet restore src/System.CommandLine.Minimal.sln
       
     - name: Build Minimal CommandLine
-      run: dotnet build src/System.CommandLine.Minimal.sln -c Release --no-restore -f netstandard2.0
+      run: dotnet build src/System.CommandLine.Minimal.sln -c Release --no-restore -f net6.0
       
       # packs all nuget packages at once 
     - name: Pack MinimalCommandLine Nuget Alpha
