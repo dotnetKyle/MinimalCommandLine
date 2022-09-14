@@ -19,4 +19,4 @@ jobs:
       run: dotnet restore src/System.CommandLine.Minimal/System.CommandLine.Minimal.csproj
       
     - name: Build Minimal CommandLine
-      run: dotnet build src/System.CommandLine.Minimal/System.CommandLine.Minimal.csproj -c Release --no-restore -f net6.0
+      run: dotnet build src/System.CommandLine.Minimal/System.CommandLine.Minimal.csproj -c Release --no-restore -f netstandard2.0
