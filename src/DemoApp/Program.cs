@@ -17,6 +17,18 @@ var app = builder.Build();
 
 app.AddRootDescription("Commands for creating certificates.");
 
+app.SetRootHandler(() => {
+    Console.WriteLine("Start by creating a Root Certificate Authority by using the " +
+        "command \"rootCA\".");
+    Console.WriteLine("Then you can use that self-signed certificate to create " +
+        "an Intermediate Certificate Authority, then an SSL Certificate.");
+    Console.WriteLine("Use the -h flag to get the help documentation for any command.");
+    Console.WriteLine();
+    
+    // show the help docs
+    app.Execute(new[] { "-h" });
+});
+
 app.AddCommand("rootCA",
     commandOptions => 
     {
@@ -48,7 +60,7 @@ app.AddCommand("rootCA",
                     .AddDescription("Add a date that the certificate cannot be used before.")
                     .AddDefaultValue(DateOnly.FromDateTime(DateTime.UtcNow))
                 )
-            .AddOption<DateOnly>("-na", option =>
+            .AddOption<DateOnly?>("-na", option =>
                 option.AddAlias("--not-after")
                     .AddDescription("Add a date that the certificate cannot be used after.")
                     .AddDefaultValue(DateOnly.FromDateTime(DateTime.UtcNow.AddYears(10)))
