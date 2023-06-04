@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DemoApp.Services
+﻿namespace DemoApp.Services
 {
     public class FileSerialNumberProvider : ISerialNumberProvider
     {
         string getDirectory()
         {
+            // TODO: this call will probably only work in Windows, use Environment variables to get the Home path and use that instead
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
             var appDirectory = Path.Combine(appData, "DemoApp");

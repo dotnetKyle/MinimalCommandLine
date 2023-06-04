@@ -1,33 +1,27 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using System.Collections.Generic;
 using System.CommandLine.Invocation;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace System.CommandLine.Minimal;
 
-public class MinimalCommandLineApp
+public class MinimalCommandLineApp : IHost
 {
-    public MinimalCommandLineApp(IServiceProvider services, IConfigurationRoot configuration)
+    public MinimalCommandLineApp(Command rootCommand, IServiceProvider services, IConfigurationRoot configuration)
     {
+        // pass in the root command after it is built from DI
+        RootCommand = rootCommand;
+
         Services = services;
         Configuration = configuration;
-
-        RootCommand = new RootCommand();
     }
 
     public IServiceProvider Services { get; private set; }
     public IConfigurationRoot Configuration { get; private set; }
 
-    internal RootCommand RootCommand { get; private set; }
-
-    public async Task ExecuteAsync(string[] args)
-    {
-        await RootCommand.InvokeAsync(args);
-    }
-    public int Execute(string[] args)
-    {
-        return RootCommand.Invoke(args);
-    }
+    internal Command RootCommand { get; private set; }
 
     public void SetRootHandler(Delegate handler)
     {
@@ -200,5 +194,19 @@ public class MinimalCommandLineApp
         return this;
     }
 
+    public void Invoke(string[] args)
+    {
+        RootCommand.Invoke(args);
+    }
+    public async Task InvokeAsync(string[] args)
+    {
+        await RootCommand.InvokeAsync(args);
+    }
 
+    Task IHost.StartAsync(CancellationToken cancellationToken)
+        => throw new NotImplementedException();
+    Task IHost.StopAsync(CancellationToken cancellationToken)
+        => throw new NotImplementedException();
+    void IDisposable.Dispose()
+        => throw new NotImplementedException();
 }
