@@ -9,15 +9,13 @@ using Microsoft.Extensions.Hosting;
 var app = new MinimalCommandLineBuilder()
     .ConfigureServices((services) =>
     {
-        services.AddTransient<ISerialNumberProvider, FileSerialNumberProvider>()
-            .AddTransient<RootCaGenerator>()
-            .AddTransient<IntermediateCaGenerator>()
-            .AddTransient<SSLCertificateGenerator>()
+        services
             .AddSingleton<ISerialNumberProvider, FileSerialNumberProvider>()
-            .AddSingleton<CountryCompletions>()
-            ;
+            .AddSingleton<CountryCompletions>();
     })
+    // replace the root command with some help text
     .OverrideRootCommand<MainHelp>()
+    // add commands
     .AddCommand<RootCACommand>()
     .AddCommand<IntermediateCACommand>()
     .AddCommand<SslCertificateCommand>()

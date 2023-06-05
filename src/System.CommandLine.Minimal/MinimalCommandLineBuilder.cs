@@ -87,7 +87,6 @@ public class MinimalCommandLineBuilder : IHostBuilder, ICommandContext<MinimalCo
         // then, recursive build all of the child commands
         recursivelyBuildCommands(services, rootInstance, subCommands);
 
-        // TODO: pass rootInstance into app
         return new MinimalCommandLineApp(rootInstance, services, configRoot);
     } 
     IHost IHostBuilder.Build()

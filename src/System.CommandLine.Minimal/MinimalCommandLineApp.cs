@@ -132,68 +132,6 @@ public class MinimalCommandLineApp : IHost
         }
     }
 
-    public MinimalCommandLineApp AddRootDescription(string desc)
-    {
-        RootCommand.Description = desc;
-        return this;
-    }
-    public MinimalCommandLineApp AddRootAlias(string alias)
-    {
-        RootCommand.AddAlias(alias);
-        return this;
-    }
-    public MinimalCommandLineApp AddRootArgument<T>(string name, Action<ArgumentBuilder<T>>? argOptions = null)
-    {
-        var arg = new Argument<T>(name);
-
-        if (argOptions is not null)
-        {
-            var argBuilder = new ArgumentBuilder<T>(arg);
-            argOptions(argBuilder);
-        }
-
-        RootCommand.AddArgument(arg);
-        return this;
-    }
-    public MinimalCommandLineApp AddRootOption<T>(string name, Action<OptionBuilder<T>>? options = null)
-    {
-        var opt = new Option<T>(name);
-
-        if (options is not null)
-        {
-            var optBuilder = new OptionBuilder<T>(opt);
-            options(optBuilder);
-        }
-
-        RootCommand.AddOption(opt);
-        return this;
-    }
-
-    public MinimalCommandLineApp MapCommand<THandler>(
-        string commandName,
-        Func<THandler, Delegate> handler,
-        Action<CommandBuilder<THandler>> cmdOptions
-        ) 
-        where THandler : notnull
-    {
-        var cmd = new Command(commandName);
-        var builder = new CommandBuilder<THandler>(cmd, Services, handler);
-        cmdOptions(builder);
-        cmd.SetHandler(builder.handlerActivator);
-
-        RootCommand.AddCommand(builder.Command);
-
-        return this;
-    }
-
-    public MinimalCommandLineApp AddCommand(string commandName, Action<CommandBuilder> cmdOptions)
-    {
-        var cmd = new Command(commandName);
-        var opt = new CommandBuilder(cmd);                cmdOptions(opt);
-        RootCommand.AddCommand(opt.Command);        
-        return this;
-    }
-
     public void Invoke(string[] args)
     {
         RootCommand.Invoke(args);
