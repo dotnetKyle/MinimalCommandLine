@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
-using System.CommandLine.Invocation;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,43 +16,52 @@ public class CommandBuilder
         Command = cmd;
     }
 
+    internal Dictionary<string, Func<ParseResult, object?>> ArgumentParsers = new();
+    internal Dictionary<string, Func<ParseResult, object?>> OptionParsers = new();
+
     public CommandBuilder AddCommandDescription(string description)
     {
         Command.Description = description;
-
         return this;
     }
+
     public CommandBuilder AddAlias(string alias)
     {
-        Command.AddAlias(alias);
+        Command.Aliases.Add(alias);
         return this;
     }
+
     public CommandBuilder AddArgument<T>(string name, Action<ArgumentBuilder<T>>? argOptions = null)
     {
         var arg = new Argument<T>(name);
         
         if(argOptions is not null)
         {
-            var opt = new ArgumentBuilder<T>(arg);
-            argOptions(opt);
+            var argBuilder = new ArgumentBuilder<T>(name, arg);
+
+            this.ArgumentParsers.Add(name, (ParseResult result) => result.GetValue<T>(name));
+
+            argOptions(argBuilder);
         }
 
-        Command.AddArgument(arg);
-
+        Command.Add(arg);
         return this;
     }
+
     public CommandBuilder AddOption<T>(string name, Action<OptionBuilder<T>>? options = null)
     {
         var option = new Option<T>(name);
 
         if(options is not null)
         {
-            var optBuilder = new OptionBuilder<T>(option);
+            var optBuilder = new OptionBuilder<T>(name, option);
+
+            this.OptionParsers.Add(name, (ParseResult result) => result.GetValue<T>(name));
+
             options(optBuilder);
         }
 
-        Command.AddOption(option);
-
+        Command.Add(option);
         return this;
     }
     
@@ -66,7 +74,6 @@ public class CommandBuilder
         if (parameters.Length > symbolCount)
         {
             var missingParameter = parameters[symbolCount];
-
             throw new ArgumentException(nameof(handler),
                 $"The number of Handler parameters for command {Command.Name} " +
                 $"is greater than the provided arguments and options, could not find " +
@@ -76,8 +83,6 @@ public class CommandBuilder
             throw new ArgumentException(nameof(handler),
                 $"The number of arguments and options for command {Command.Name} " +
                 $"is greater than the parameters of the handler.");
-
-        var symbols = new List<(Type ValueType, Symbol symbol)>();
 
         // go through each argument and option in order, and compare them with each parameter
         for (int i = 0; i < Command.Arguments.Count + Command.Options.Count; i++)
@@ -92,73 +97,89 @@ public class CommandBuilder
                 if (argument.ValueType != parameter.ParameterType)
                     throw new Exception($"Argument ({argument.Name}) and parameter ({parameter.Name}) type mismatch.");
 
-                // by convention, if the parameter is optional, grab the default value and add it to the documentation
-                if (paramIsOptional && !argument.HasDefaultValue)
-                    argument.SetDefaultValue(parameter.DefaultValue);
+                // by convention, if the parameter is optional and has a default value
+                if (paramIsOptional && argument.GetType().IsGenericType)
+                {
+                    var defaultValue = parameter.DefaultValue;
+                    if (defaultValue != null)
+                    {
+                        var method = argument.GetType().GetMethod("SetDefaultValue");
+                        if (method != null)
+                        {
+                            method.Invoke(argument, new[] { defaultValue });
+                        }
+                    }
+                }
             }
             else
             {
                 var option = Command.Options[i - Command.Arguments.Count];
 
-                if(paramIsOptional)
-                    option.SetDefaultValue(parameter.DefaultValue);
+                if(paramIsOptional && option.GetType().IsGenericType)
+                {
+                    var defaultValue = parameter.DefaultValue;
+                    if (defaultValue != null)
+                    {
+                        var method = option.GetType().GetMethod("SetDefaultValue");
+                        if (method != null)
+                        {
+                            method.Invoke(option, new[] { defaultValue });
+                        }
+                    }
+                }
 
                 // by convention, if the parameter is required and the option is not, set the option to be required
-                if (!paramIsOptional && !option.IsRequired)
-                    option.IsRequired = true;
+                if (!paramIsOptional)
+                {
+                    option.Required = true;
+                }
 
                 if (option.ValueType != parameter.ParameterType)
                     throw new Exception($"Option ({option.Name}) and parameter ({parameter.Name}) type mismatch.");
 
                 // if the parameter is optional, grab the default value and add it to the documentation
-                if (paramIsOptional && option.IsRequired)
+                if (paramIsOptional && option.Required)
                     throw new Exception($"Optional Option ({option.Name}) and required parameter mismatch.");
             }
         }
 
         _delegateHandler = handler;
 
-        Command.SetHandler(delegateCaller);
+        Command.SetAction((parseResult) => {
+            var dynamicArguments = new List<object?>();
+
+            foreach (var arg in Command.Arguments)
+            {
+                object? argValue = this.ArgumentParsers[arg.Name]
+                    .Invoke(parseResult);
+                dynamicArguments.Add(argValue);
+            }
+            foreach (var opt in Command.Options)
+            {
+                object? optionValue = this.OptionParsers[opt.Name]
+                    .Invoke(parseResult);
+                dynamicArguments.Add(optionValue);
+            }
+
+            // run the method based on the return type
+            var returnType = _delegateHandler.Method.ReturnType;
+
+            if (returnType == typeof(Task))
+            {
+                var task = (Task)_delegateHandler.DynamicInvoke(dynamicArguments.ToArray());
+                return task;
+            }
+            else if (returnType == typeof(void))
+            {
+                _delegateHandler.DynamicInvoke(dynamicArguments.ToArray());
+                return Task.CompletedTask;
+            }
+            else
+            {
+                throw new NotSupportedException($"A handler of type {returnType} is not supported.");
+            }
+        });
     }
 
-    Delegate? _delegateHandler;
-    void delegateCaller(InvocationContext context)
-    {
-        if (_delegateHandler is null)
-            throw new ArgumentNullException("Handler",
-                $"Delegating handler for command \"{Command.Name}\" was not set.");
-
-        var dynamicArguments = new List<object?>();
-
-        foreach (var arg in Command.Arguments)
-        {
-            var argVal = context.ParseResult.GetValueForArgument(arg);
-            dynamicArguments.Add(argVal);
-        }
-        foreach (var opt in Command.Options)
-        {
-            var argVal = context.ParseResult.GetValueForOption(opt);
-            dynamicArguments.Add(argVal);
-        }
-
-        // run the method based on the return type
-        var returnType = _delegateHandler.Method.ReturnType;
-
-        if(returnType == typeof(Task))
-        {
-            var task = (Task)_delegateHandler.DynamicInvoke(dynamicArguments.ToArray());
-
-            task.ConfigureAwait(false)
-                .GetAwaiter()
-                .GetResult();
-        }
-        else if(returnType == typeof(void))
-        {
-            var result = _delegateHandler.DynamicInvoke(dynamicArguments.ToArray());
-        }
-        else
-        {
-            throw new NotSupportedException($"A handler of type {returnType} is not supported.");
-        }
-    }
+    private Delegate? _delegateHandler;
 }
