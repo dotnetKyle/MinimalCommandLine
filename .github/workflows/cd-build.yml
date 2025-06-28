@@ -28,7 +28,7 @@ jobs:
       run: dotnet pack src/System.CommandLine.Minimal/System.CommandLine.Minimal.csproj -c Release --no-build -p:PackageVersion=0.5.0.${{github.run_number}}
       
     - name: Publish MinimalCommandLine Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Nugets
         path: src/**/bin/**/*.nupkg
