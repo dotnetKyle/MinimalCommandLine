@@ -16,6 +16,9 @@ public class MinimalCommandLineApp
         RootCommand = new RootCommand();
     }
 
+    internal readonly Dictionary<string, Func<ParseResult, object?>> ArgumentParsers = new();
+    internal readonly Dictionary<string, Func<ParseResult, object?>> OptionParsers = new();
+
     public IServiceProvider Services { get; private set; }
     public IConfigurationRoot Configuration { get; private set; }
 
@@ -91,7 +94,15 @@ public class MinimalCommandLineApp
             }
             else
             {
-                var option = RootCommand.Options[i - RootCommand.Arguments.Count];
+                List<Option> validOptions = new();
+                foreach(var o in RootCommand.Options)
+                {
+                    if (o.Name == "--help" || o.Name == "--version")
+                        continue;
+
+                    validOptions.Add(o);
+                }
+                var option = validOptions[i - RootCommand.Arguments.Count];
 
                 if (paramIsOptional && option.GetType().IsGenericType)
                 {
@@ -129,13 +140,18 @@ public class MinimalCommandLineApp
 
             foreach (Argument arg in RootCommand.Arguments)
             {
-                ArgumentResult? argVal = parseResult.GetResult(arg);
-                dynamicArguments.Add(argVal);
+                object? argValue = this.ArgumentParsers[arg.Name]
+                    .Invoke(parseResult);
+                dynamicArguments.Add(argValue);
             }
             foreach (Option opt in RootCommand.Options)
             {
-                OptionResult? optVal = parseResult.GetResult(opt);
-                dynamicArguments.Add(optVal);
+                if (opt.Name == "--help" || opt.Name == "--version")
+                    continue;
+
+                object? optionValue = this.OptionParsers[opt.Name]
+                    .Invoke(parseResult);
+                dynamicArguments.Add(optionValue);
             }
 
             // run the method based on the return type
@@ -175,6 +191,7 @@ public class MinimalCommandLineApp
     public MinimalCommandLineApp AddRootArgument<T>(string name, Action<ArgumentBuilder<T>>? argOptions = null)
     {
         var arg = new Argument<T>(name);
+        this.ArgumentParsers.Add(name, (ParseResult result) => result.GetValue<T>(name));
 
         if (argOptions is not null)
         {
@@ -189,6 +206,7 @@ public class MinimalCommandLineApp
     public MinimalCommandLineApp AddRootOption<T>(string name, Action<OptionBuilder<T>>? options = null)
     {
         var opt = new Option<T>(name);
+        this.OptionParsers.Add(name, (ParseResult result) => result.GetValue<T>(name));
 
         if (options is not null)
         {

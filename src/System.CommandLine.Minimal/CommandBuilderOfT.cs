@@ -21,8 +21,8 @@ public class CommandBuilder<THandler>
         DelegateLocator = delegateLocator;
     }
 
-    internal Dictionary<string, Func<ParseResult, object?>> ArgumentParsers = new();
-    internal Dictionary<string, Func<ParseResult, object?>> OptionParsers = new();
+    internal readonly Dictionary<string, Func<ParseResult, object?>> ArgumentParsers = new();
+    internal readonly Dictionary<string, Func<ParseResult, object?>> OptionParsers = new();
 
     public CommandBuilder<THandler> AddCommandDescription(string description)
     {
@@ -39,13 +39,11 @@ public class CommandBuilder<THandler>
     public CommandBuilder<THandler> AddArgument<T>(string name, Action<ArgumentBuilder<T>>? argOptions = null)
     {
         var arg = new Argument<T>(name);
+        this.ArgumentParsers.Add(name, (ParseResult result) => result.GetValue<T>(name));
 
         if (argOptions is not null)
         {
             var argBuilder = new ArgumentBuilder<T>(name, arg);
-
-            this.ArgumentParsers.Add(name, (ParseResult result) => result.GetValue<T>(name));
-
             argOptions(argBuilder);
         }
 
@@ -56,13 +54,11 @@ public class CommandBuilder<THandler>
     public CommandBuilder<THandler> AddOption<T>(string name, Action<OptionBuilder<T>>? options = null)
     {
         var option = new Option<T>(name);
+        this.OptionParsers.Add(name, (ParseResult result) => result.GetValue<T>(name));
 
         if (options is not null)
         {
             var optBuilder = new OptionBuilder<T>(name, option);
-
-            this.OptionParsers.Add(name, (ParseResult result) => result.GetValue<T>(name));
-
             options(optBuilder);
         }
 
@@ -83,13 +79,13 @@ public class CommandBuilder<THandler>
 
         var dynamicArguments = new List<object?>();
 
-        foreach (var arg in Command.Arguments)
+        foreach (Argument arg in Command.Arguments)
         {
             object? argValue = this.ArgumentParsers[arg.Name]
                 .Invoke(parseResult);
             dynamicArguments.Add(argValue);
         }
-        foreach (var opt in Command.Options)
+        foreach (Option opt in Command.Options)
         {
             object? optionValue = this.OptionParsers[opt.Name]
                 .Invoke(parseResult);
