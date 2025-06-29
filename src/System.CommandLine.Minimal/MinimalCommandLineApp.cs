@@ -22,6 +22,8 @@ public class MinimalCommandLineApp : IHostedService
     internal readonly Dictionary<string, Func<ParseResult, object?>> ArgumentParsers = new();
     internal readonly Dictionary<string, Func<ParseResult, object?>> OptionParsers = new();
 
+    string prompt = "";
+
     public IHost Host { get; private set; }
     public IServiceProvider Services => this.Host.Services;
     public IConfiguration Configuration { get; private set; }
@@ -30,7 +32,33 @@ public class MinimalCommandLineApp : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await ExecuteAsync(args);
+        CancellationTokenSource cts = new();
+        while(!cts.IsCancellationRequested)
+        {
+            // wait for input
+            Console.Write(prompt + "> ");
+            string commandString = Console.ReadLine();
+
+            ParseResult result = RootCommand.Parse(commandString);
+
+            if(result.Errors.Count > 0)
+            {
+                string cmd = result.CommandResult.Command.Name;
+                string errorMessage = result.Errors.Count == 1
+                    ? $"There was an error running the <{cmd}> command:"
+                    : $"There were errors running the <{cmd}> command:";
+                Console.WriteLine(errorMessage);
+
+                foreach (ParseError error in result.Errors)
+                {
+                    Console.Error.WriteLine(' ' + error.Message);
+                }
+            }
+            else
+            {
+                await result.InvokeAsync(cts.Token);
+            }
+        }
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
@@ -189,6 +217,12 @@ public class MinimalCommandLineApp : IHostedService
     }
 
     private Delegate? _delegateHandler;
+
+    public MinimalCommandLineApp AddPrompt(string prompt)
+    {
+        this.prompt = prompt;
+        return this;
+    }
 
     public MinimalCommandLineApp AddRootDescription(string desc)
     {

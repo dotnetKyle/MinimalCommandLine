@@ -12,7 +12,7 @@ public class MinimalCommandLineBuilder : IHostApplicationBuilder
     private readonly string[] args;
     internal readonly HostApplicationBuilder builder;
 
-    public MinimalCommandLineBuilder()
+    public MinimalCommandLineBuilder(params string[] args)
     {
         this.args = args ?? Array.Empty<string>();
         this.builder = Host.CreateApplicationBuilder();
@@ -28,7 +28,7 @@ public class MinimalCommandLineBuilder : IHostApplicationBuilder
 
     public MinimalCommandLineApp Build()
     {
-        MinimalCommandLineApp app = new(this, args);
+        MinimalCommandLineApp app = new(this, this.args);
         return app;
     }
 
