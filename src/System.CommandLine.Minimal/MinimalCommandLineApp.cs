@@ -1,28 +1,42 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System.Collections.Generic;
 using System.CommandLine.Parsing;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace System.CommandLine.Minimal;
 
-public class MinimalCommandLineApp
+public class MinimalCommandLineApp : IHostedService
 {
-    public MinimalCommandLineApp(IServiceProvider services, IConfigurationRoot configuration)
+    private readonly string[] args;
+    internal MinimalCommandLineApp(MinimalCommandLineBuilder builder, string[] args)
     {
-        Services = services;
-        Configuration = configuration;
-
-        RootCommand = new RootCommand();
+        this.Host = builder.builder.Build();
+        this.Configuration = builder.Configuration;
+        this.args = args;
+        this.RootCommand = new RootCommand();
     }
 
     internal readonly Dictionary<string, Func<ParseResult, object?>> ArgumentParsers = new();
     internal readonly Dictionary<string, Func<ParseResult, object?>> OptionParsers = new();
 
-    public IServiceProvider Services { get; private set; }
-    public IConfigurationRoot Configuration { get; private set; }
+    public IHost Host { get; private set; }
+    public IServiceProvider Services => this.Host.Services;
+    public IConfiguration Configuration { get; private set; }
 
     internal RootCommand RootCommand { get; private set; }
+
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        await ExecuteAsync(args);
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
 
     public async Task<int> ExecuteAsync(string[] args)
     {

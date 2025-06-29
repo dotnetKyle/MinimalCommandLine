@@ -17,7 +17,7 @@
 ```csharp
 using System.CommandLine.Minimal;
 
-var app = new MinimalCommandLineBuilder()
+MinimalCommandLineBuilder app = new()
     .Build();
 
 app.AddRootDescription("A simple demo app for the command line.")
@@ -50,7 +50,7 @@ Check the Properties/launchSettings.json file, ensure that the `commandLineArgs`
 ```shell
 dotnet build DemoApp.csproj -c Debug
 
-cd \bin\Debug\net6.0\
+cd \bin\Debug\net8.0\
 
 DemoApp.exe -h
 ```
@@ -62,7 +62,9 @@ DemoApp.exe -h
 The API and the application logic are together.  Uses an `Action<Task>` directly in the Program.cs.
 
 ```csharp
-var app = new MinimalCommandLineBuilder()
+// Program.cs
+
+MinimalCommandLineBuilder app = new()
   .Build();
 
 app.AddRootDescription("Create X509Certificates.");
@@ -128,6 +130,8 @@ app.AddCommand("rootCA"
           }
         })
   });
+
+await app.ExecuteAsync(args);
 ```
 
 ### Separate Approach (static class):
@@ -136,7 +140,9 @@ Same logic as above but inside a static method allows for the parameters to
 have optional values (which are automatically to the API help convention).
 
 ```csharp
-var app = new MinimalCommandLineBuilder()
+// Program.cs
+
+MinimalCommandLineBuilder app = new()
   .Build();
 
 app.AddRootDescription("Create X509Certificates.");
@@ -163,6 +169,8 @@ app.AddCommand("rootCA"
         .SetHandler(RootCaGenerator.GenerateSelfSigned);
     });
 
+await app.ExecuteAsync(args);
+
 public static class RootCaGenerator
 {
   public static async Task GenerateSelfSigned(
@@ -180,6 +188,8 @@ public static class RootCaGenerator
 Uses a class instance and gets dependencies from DI.
 
 ```csharp
+// Program.cs
+
 // add the command and it's dependencies to DI
 var app = new MinimalCommandLineBuilder()
   .AddTransient<ISerialNumberProvider, FileSystemSerialNumberProvider>()
@@ -207,6 +217,8 @@ app.MapCommand<IntermediateCaGenerator>("intermediateCA",
       .AddOption<string[]>("-ou", option =>
         // truncated for brevity
     });
+
+await app.ExecuteAsync(args);
 
 public class IntermediateCaGenerator
 {

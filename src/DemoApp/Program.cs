@@ -1,11 +1,8 @@
 ﻿using DemoApp.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System.CommandLine.Minimal;
-using System.Security.Cryptography.X509Certificates;
-using System.Security.Cryptography;
 
-var builder = new MinimalCommandLineBuilder();
-
+MinimalCommandLineBuilder builder = new();
 
 builder.Services
     .AddTransient<ISerialNumberProvider, FileSerialNumberProvider>()
@@ -13,7 +10,7 @@ builder.Services
     .AddTransient<IntermediateCaGenerator>()
     .AddTransient<SSLCertificateGenerator>();
 
-var app = builder.Build();
+MinimalCommandLineApp app = builder.Build();
 
 app.AddRootDescription("Commands for creating certificates.");
 
@@ -186,4 +183,4 @@ app.MapCommand<SSLCertificateGenerator>("ssl",
                 );
     });
 
-app.Execute(args);
+await app.ExecuteAsync(args);
