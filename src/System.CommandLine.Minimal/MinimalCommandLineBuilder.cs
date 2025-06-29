@@ -1,27 +1,40 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 
 namespace System.CommandLine.Minimal;
 
-public class MinimalCommandLineBuilder
-{
+public class MinimalCommandLineBuilder : IHostApplicationBuilder
+{ 
+    private readonly string[] args;
+    internal readonly HostApplicationBuilder builder;
+
     public MinimalCommandLineBuilder()
     {
-        Services = new ServiceCollection();
-        ConfigurationManager = new ConfigurationManager();
+        this.args = args ?? Array.Empty<string>();
+        this.builder = Host.CreateApplicationBuilder();
+        this.Properties = new Dictionary<object, object>();
     }
     
-    public ServiceCollection Services { get; private set; }
-    public ConfigurationManager ConfigurationManager { get; private set; }
+    public IServiceCollection Services => builder.Services;
+    public IConfigurationManager Configuration => builder.Configuration;
+    public IDictionary<object, object> Properties { get; }
+    public IHostEnvironment Environment => builder.Environment;
+    public ILoggingBuilder Logging => builder.Logging;
+    public IMetricsBuilder Metrics => builder.Metrics;
 
     public MinimalCommandLineApp Build()
     {
-        var configRoot = ((IConfigurationBuilder)ConfigurationManager).Build();
+        MinimalCommandLineApp app = new(this, args);
+        return app;
+    }
 
-        Services.AddSingleton<IConfiguration>(configRoot);
-
-        var services = Services.BuildServiceProvider();
-
-        return new MinimalCommandLineApp(services, configRoot);
+    public void ConfigureContainer<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory, Action<TContainerBuilder>? configure = null) 
+        where TContainerBuilder : notnull
+    {
+        throw new NotImplementedException();
     }
 }
