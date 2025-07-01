@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.CommandLine.Minimal;
 
-MinimalCommandLineBuilder builder = new();
+MinimalCommandLineBuilder builder = new(args);
 
 builder.Services
     .AddTransient<ISerialNumberProvider, FileSerialNumberProvider>()
@@ -10,7 +10,14 @@ builder.Services
     .AddTransient<IntermediateCaGenerator>()
     .AddTransient<SSLCertificateGenerator>();
 
+if(args.Any(arg => arg.Equals("--useShell", StringComparison.OrdinalIgnoreCase)))
+{
+    builder.UseShellMode();
+}
+
 MinimalCommandLineApp app = builder.Build();
+
+app.AddPrompt("CERTS");
 
 app.AddRootDescription("Commands for creating certificates.");
 
@@ -70,7 +77,6 @@ app.AddCommand("rootCA",
             .SetHandler(RootCaGenerator.GenerateRootCaAsync);
     });
 
-
 app.MapCommand<IntermediateCaGenerator>("intermediateCA", 
     handler => handler.GenerateCaAsync,
     commandOptions => 
@@ -119,7 +125,6 @@ app.MapCommand<IntermediateCaGenerator>("intermediateCA",
                     .AddDefaultValue(2048)
                 );
     });
-
 
 app.MapCommand<SSLCertificateGenerator>("ssl",
     handler => handler.GenerateSslCertAsync,
@@ -183,4 +188,4 @@ app.MapCommand<SSLCertificateGenerator>("ssl",
                 );
     });
 
-await app.ExecuteAsync(args);
+await app.StartAsync();

@@ -1,8 +1,6 @@
 ﻿using System.CommandLine.Minimal;
 
-using Microsoft.Extensions.Hosting;
-
-MinimalCommandLineBuilder builder = new();
+MinimalCommandLineBuilder builder = new(args);
 
 MinimalCommandLineApp app = builder.Build();
 
@@ -18,4 +16,4 @@ app.AddRootDescription("A simple demo app for the command line.")
         }
     );
 
-await app.ExecuteAsync(args);
+await app.StartAsync();
