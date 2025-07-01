@@ -2,27 +2,29 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Collections.Generic;
-using System.CommandLine.Parsing;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace System.CommandLine.Minimal;
-
 public class MinimalCommandLineApp : IHostedService
 {
     private readonly string[] args;
+    private readonly CommandExecutionMode cmdExecutionMode;
+    private CommandExecutorCli CliCommandExecutor => this.Services.GetRequiredService<CommandExecutorCli>();
+    private CommandExecutorShell ShellCommandExecutor => this.Services.GetRequiredService<CommandExecutorShell>();
+
     internal MinimalCommandLineApp(MinimalCommandLineBuilder builder, string[] args)
     {
         this.Host = builder.builder.Build();
+        this.cmdExecutionMode = builder.cmdExecutionMode;
         this.Configuration = builder.Configuration;
         this.args = args;
-        this.RootCommand = new RootCommand();
+        this.RootCommand = new();
     }
 
     internal readonly Dictionary<string, Func<ParseResult, object?>> ArgumentParsers = new();
     internal readonly Dictionary<string, Func<ParseResult, object?>> OptionParsers = new();
-
-    string prompt = "";
 
     public IHost Host { get; private set; }
     public IServiceProvider Services => this.Host.Services;
@@ -30,52 +32,40 @@ public class MinimalCommandLineApp : IHostedService
 
     internal RootCommand RootCommand { get; private set; }
 
+    /// <summary>
+    /// Start the application.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        CancellationTokenSource cts = new();
-        while(!cts.IsCancellationRequested)
+        if (this.cmdExecutionMode == CommandExecutionMode.CliRequired)
         {
-            // wait for input
-            Console.Write(prompt + "> ");
-            string commandString = Console.ReadLine();
-
-            ParseResult result = RootCommand.Parse(commandString);
-
-            if(result.Errors.Count > 0)
-            {
-                string cmd = result.CommandResult.Command.Name;
-                string errorMessage = result.Errors.Count == 1
-                    ? $"There was an error running the <{cmd}> command:"
-                    : $"There were errors running the <{cmd}> command:";
-                Console.WriteLine(errorMessage);
-
-                foreach (ParseError error in result.Errors)
-                {
-                    Console.Error.WriteLine(' ' + error.Message);
-                }
-            }
+            await this.CliCommandExecutor!.ExecuteAsync(this.RootCommand, this.args);
+        }
+        else if (this.cmdExecutionMode == CommandExecutionMode.ShellRequired)
+        {
+            await this.ShellCommandExecutor!.ExecuteAsync(this.RootCommand, this.args);
+        }
+        else if(this.cmdExecutionMode == CommandExecutionMode.ShellDefault)
+        {
+            if (this.args.Contains("--non-interactive"))
+                await this.CliCommandExecutor!.ExecuteAsync(this.RootCommand, this.args);
             else
-            {
-                await result.InvokeAsync(cts.Token);
-            }
+                await this.ShellCommandExecutor!.ExecuteAsync(this.RootCommand, this.args);
+        }
+        else if(this.cmdExecutionMode == CommandExecutionMode.CliDefault)
+        {
+            if(this.args.Contains("--shell"))
+                await this.CliCommandExecutor!.ExecuteAsync(this.RootCommand, this.args);
+            else
+                await this.ShellCommandExecutor!.ExecuteAsync(this.RootCommand, this.args);
         }
     }
-
+    public Task StartAsync() => this.StartAsync(CancellationToken.None);
     public Task StopAsync(CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
-    }
-
-    public async Task<int> ExecuteAsync(string[] args)
-    {
-        var parseResult = RootCommand.Parse(args);
-        return await parseResult.InvokeAsync();
-    }
-    
-    public int Execute(string[] args)
-    {
-        var parseResult = RootCommand.Parse(args);
-        return parseResult.Invoke();
     }
 
     public void SetRootHandler(Delegate handler)
@@ -220,7 +210,7 @@ public class MinimalCommandLineApp : IHostedService
 
     public MinimalCommandLineApp AddPrompt(string prompt)
     {
-        this.prompt = prompt;
+        this.Services.GetRequiredService<CommandExecutorShell>().SetPrompt(prompt);
         return this;
     }
 
