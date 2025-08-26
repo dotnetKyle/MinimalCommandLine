@@ -17,7 +17,7 @@
 ```csharp
 using System.CommandLine.Minimal;
 
-MinimalCommandLineBuilder app = new()
+MinimalCommandLineBuilder app = new(args)
     .Build();
 
 app.AddRootDescription("A simple demo app for the command line.")
@@ -32,7 +32,7 @@ app.AddRootDescription("A simple demo app for the command line.")
         }
     );
 
-app.Execute(args);
+await app.StartAsync();
 ```
 
 ## Getting Started
@@ -64,8 +64,9 @@ The API and the application logic are together.  Uses an `Action<Task>` directly
 ```csharp
 // Program.cs
 
-MinimalCommandLineBuilder app = new()
-  .Build();
+MinimalCommandLineBuilder = new(args);
+
+MinimalCommandLineApp app = builder.Build();
 
 app.AddRootDescription("Create X509Certificates.");
 
@@ -131,7 +132,7 @@ app.AddCommand("rootCA"
         })
   });
 
-await app.ExecuteAsync(args);
+await app.StartAsync();
 ```
 
 ### Separate Approach (static class):
@@ -142,8 +143,9 @@ have optional values (which are automatically to the API help convention).
 ```csharp
 // Program.cs
 
-MinimalCommandLineBuilder app = new()
-  .Build();
+MinimalCommandLineBuilder builder = new(args);
+
+MinimalCommandLineApp app = builder.Build();
 
 app.AddRootDescription("Create X509Certificates.");
 
@@ -169,7 +171,7 @@ app.AddCommand("rootCA"
         .SetHandler(RootCaGenerator.GenerateSelfSigned);
     });
 
-await app.ExecuteAsync(args);
+await app.StartAsync();
 
 public static class RootCaGenerator
 {
@@ -190,11 +192,13 @@ Uses a class instance and gets dependencies from DI.
 ```csharp
 // Program.cs
 
-// add the command and it's dependencies to DI
-var app = new MinimalCommandLineBuilder()
+
+// add the command and it's dependencies to Dependency Injection (DI)
+MinimalCommandLineBuilder builder = new(args)
   .AddTransient<ISerialNumberProvider, FileSystemSerialNumberProvider>()
-  .AddTransient<IntermediateCaGenerator>()
-  .Build();
+  .AddTransient<IntermediateCaGenerator>();
+
+MinimalCommandLineApp app = builder.Build();
 
 app.AddRootDescription("Create X509Certificates.");
 
@@ -218,7 +222,8 @@ app.MapCommand<IntermediateCaGenerator>("intermediateCA",
         // truncated for brevity
     });
 
-await app.ExecuteAsync(args);
+await app.StartAsync();
+
 
 public class IntermediateCaGenerator
 {
