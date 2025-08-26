@@ -47,6 +47,7 @@ public class MinimalCommandLineBuilder : IHostApplicationBuilder
         this.cmdExecutionMode = CommandExecutionMode.ShellDefault;
         return this;
     }
+
     /// <summary>
     /// Disable CLI mode for execution, this requires shell mode for the user.
     /// <para>The default is CLI Mode but shell mode is allowed.</para>
@@ -62,7 +63,7 @@ public class MinimalCommandLineBuilder : IHostApplicationBuilder
     /// </summary>
     public MinimalCommandLineBuilder RequireCliMode()
     {
-        this.cmdExecutionMode = CommandExecutionMode.ShellRequired;
+        this.cmdExecutionMode = CommandExecutionMode.CliRequired;
         return this;
     }
 

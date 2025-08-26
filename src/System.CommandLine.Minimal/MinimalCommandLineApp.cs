@@ -57,9 +57,9 @@ public class MinimalCommandLineApp : IHostedService
         else if(this.cmdExecutionMode == CommandExecutionMode.CliDefault)
         {
             if(this.args.Contains("--shell"))
-                await this.CliCommandExecutor!.ExecuteAsync(this.RootCommand, this.args);
-            else
                 await this.ShellCommandExecutor!.ExecuteAsync(this.RootCommand, this.args);
+            else
+                await this.CliCommandExecutor!.ExecuteAsync(this.RootCommand, this.args);
         }
     }
     public Task StartAsync() => this.StartAsync(CancellationToken.None);
