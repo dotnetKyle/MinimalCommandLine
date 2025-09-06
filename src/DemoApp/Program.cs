@@ -26,11 +26,9 @@ app.SetRootHandler(() => {
         "command \"rootCA\".");
     Console.WriteLine("Then you can use that self-signed certificate to create " +
         "an Intermediate Certificate Authority, then an SSL Certificate.");
-    Console.WriteLine("Use the -h flag to get the help documentation for any command.");
+    Console.WriteLine("Use the -h flag to show the help documentation. Also, " +
+        "using -h on any command will show the help for that command.");
     Console.WriteLine();
-    
-    // show the help docs
-    app.Execute(new[] { "-h" });
 });
 
 app.AddCommand("rootCA",
