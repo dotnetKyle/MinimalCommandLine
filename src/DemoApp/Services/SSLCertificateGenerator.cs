@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.CommandLine.Minimal;
+using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
@@ -12,12 +13,14 @@ public class SSLCertificateGenerator
         _serialNumberProvider = serialNumberProvider;
     }
 
+    [Command("ssl")]
     public async Task GenerateSslCertAsync(
+        [FromServices] ISerialNumberProvider serialNumberProvider,
         string commonName,
-        string issuerFilePath,
-        string[] DNSNames,
-        string[] IPAddresses,
-        string[] OUs,
+        string issuerFilePath2,
+        [Option] string[] DNSNames,
+        [Option] string[] IPAddresses,
+        [Option] string[] OUs,
         string? organization = null,
         string? country = null,
         string? public_filePath = null,
@@ -67,13 +70,13 @@ public class SSLCertificateGenerator
             return;
         }
 
-        if (!File.Exists(issuerFilePath))
+        if (!File.Exists(issuerFilePath2))
         {
             Console.WriteLine($"File path to the issuer certificate does not exist.");
             return;
         }
 
-        var issuerCABytes = await File.ReadAllBytesAsync(issuerFilePath);
+        var issuerCABytes = await File.ReadAllBytesAsync(issuerFilePath2);
         var issuerCA = new X509Certificate2(issuerCABytes);
         if (!issuerCA.HasPrivateKey)
         {

@@ -4,6 +4,8 @@ using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.CommandLine.Minimal.Bindings;
+using System.Linq;
 
 namespace System.CommandLine.Minimal;
 public class MinimalCommandLineBuilder : IHostApplicationBuilder
@@ -26,14 +28,86 @@ public class MinimalCommandLineBuilder : IHostApplicationBuilder
     public ILoggingBuilder Logging => builder.Logging;
     public IMetricsBuilder Metrics => builder.Metrics;
 
+    List<CommandOptions> commandOptionsCollection = new();
+    public TOptions TryRegisterCommandOptions<TOptions>()
+        where TOptions : CommandOptions
+    {
+        // this needs to be idempotent so that the CommandOptions won't accidently get registered more than once.
+        foreach(CommandOptions options in this.commandOptionsCollection)
+        {
+            if(options is TOptions alreadyConfiguredOptions)
+                return alreadyConfiguredOptions;
+        }
+
+        TOptions newOptions = Activator.CreateInstance(typeof(TOptions)) as TOptions 
+            ?? throw new InvalidOperationException("The CommandOptions implementation must have an empty constructor.");
+
+        this.commandOptionsCollection.Add(newOptions);
+
+        return newOptions;
+    }
+
+    internal RootCommand RootCommand { get; } = new();
     public MinimalCommandLineApp Build()
     {
         // add required services
         this.Services.AddSingleton<CommandExecutorCli>();
         this.Services.AddSingleton<CommandExecutorShell>();
 
+        // create and add this instance to DI
+        CommandBindingFactory cmdBindingFactory = new();
+        this.Services.AddSingleton(cmdBindingFactory);
+
+        // NOTES: going to have to create a factory to get the correct instance of the CommandOptions
+        // for the command that was invoked, inside the Handler(serivces) function, can call
+        // var factory = services.GetRequiredService<CommandOptionsFactory>();
+        // var options = factory.GetOptionsFor<TCommandType>();
+        // then we can execute the function how it was meant to be ran
+
+        foreach (CommandOptions commandOptions in commandOptionsCollection)
+        {
+            // first call this function to setup all the parameter bindings
+            ParameterBinding[] bindings = commandOptions.SetupCommandParameterBindings();
+
+            //foreach (ParameterBinding p in bindings)
+            //{
+            //    if(p is ArgumentBinding arg)
+            //        Console.WriteLine("  Argument: {0} ({1})", arg.Argument.Name, arg.ParameterType);
+            //    else if(p is OptionBinding opt)
+            //        Console.WriteLine("  Option: {0} {1}", opt.Option.Name, opt.ParameterName);
+            //}
+            // TODO: do a verification of commands to make sure they aren't in a bad configuration
+
+            // Add command, at this point the action should already be set?
+            this.RootCommand.Subcommands.Add(commandOptions.Command);
+            
+            // add options to a dictionary by the command name
+            cmdBindingFactory.AddCommandOptions(commandOptions.Command.Name, commandOptions);
+
+
+
+            //Console.WriteLine("Command: {0}", commandOptions.Command.Name);
+            //foreach (var arg in commandOptions.Command.Arguments)
+            //    Console.WriteLine("  *Argument: {0} ({1})", arg.Name, arg.ValueType.FullName);
+            //foreach (var opt in commandOptions.Command.Options)
+            //    Console.WriteLine("  *Option: {0} ({1})", opt.Name, opt.ValueType.FullName);
+
+            //List<ParameterBinding> bindings = commandOptions.GetCommandParameterBindings();
+            //foreach(ParameterBinding binding in bindings)
+            //{
+            //    if (binding is ArgumentBinding arg)
+            //        commandOptions.Command.Add(arg.Argument);
+            //    else if (binding is OptionBinding opt)
+            //        commandOptions.Command.Add(opt.Option);
+            //    else if(binding is DependencyInjectionBinding dep)
+            //    {
+            //        // ...?
+            //    }
+            //}
+        }
+
         // pass in args from builder
-        MinimalCommandLineApp app = new(this, this.args);
+        MinimalCommandLineApp app = new(this, this.commandOptionsCollection, this.args);
 
         return app;
     }

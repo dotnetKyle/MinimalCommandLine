@@ -1,14 +1,37 @@
 ﻿using DemoApp.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System.CommandLine;
 using System.CommandLine.Minimal;
+using System.CommandLine.Minimal.Bindings;
 
-MinimalCommandLineBuilder builder = new(args);
+MinimalCommandLineBuilder builder = new(args)
+    ;
+
+builder
+    .ConfigureRootCommand(options =>
+    {
+        options.Command.Description = "My root command";
+        options.CommonNameArgument.Description = "The common name for the certificate";
+    })
+    .ConfigureIntermediateCommand(options => { })
+    .ConfigureSslCommand(options => { });
+
+builder.MapAllCommands();
+
+//Command cmd = new Command("");
+//cmd.SetAction((ParseResult parseResult) => 
+//{
+//    ArgumentResult ar = parseResult.GetResult();
+//});
 
 builder.Services
     .AddTransient<ISerialNumberProvider, FileSerialNumberProvider>()
     .AddTransient<RootCaGenerator>()
     .AddTransient<IntermediateCaGenerator>()
     .AddTransient<SSLCertificateGenerator>();
+
+
+//var opt = CommandOptions.Ssl.Private_FilepathOption.Option;
 
 if(args.Any(arg => arg.Equals("--useShell", StringComparison.OrdinalIgnoreCase)))
 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.CommandLine.Minimal;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -10,7 +11,8 @@ namespace DemoApp.Services;
 
 public class RootCaGenerator
 {
-	public static async Task GenerateRootCaAsync(
+    [Command("root")]
+    public static async Task GenerateRootCaAsync(
 		string commonName,
 		string[]? OUs = null,
 		string? organization = null,
