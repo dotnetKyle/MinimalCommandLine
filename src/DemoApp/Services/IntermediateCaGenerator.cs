@@ -16,7 +16,7 @@ public class IntermediateCaGenerator
     public async Task GenerateCaAsync(
         string commonName,
         string issuerFilePath,
-        string[] OUs,
+        [Option] string[] OUs,
         string? organization = null,
         string? country = null,
         string? filePath = null,
