@@ -3,8 +3,8 @@
     "HelloWorld": {
       "commandName": "Project",
       //"commandLineArgs": "-h"
-      //"commandLineArgs": "Hi -h"
-      "commandLineArgs": "Hi \"Hello everybody..\" --option1 \"My Option 1\" --option2 \"My Option 2\""
+      "commandLineArgs": "Hi -h"
+      //"commandLineArgs": "Hi \"Hello everybody..\" --option1 \"My Option 1\" --option2 \"My Option 2\""
 
     }
   }

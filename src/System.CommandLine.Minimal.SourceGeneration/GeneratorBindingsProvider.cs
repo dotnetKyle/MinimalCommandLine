@@ -1,12 +1,13 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.CommandLine.Minimal.SourceGeneration.Conventions;
 using System.Linq;
 using System.Threading;
 
 namespace System.CommandLine.Minimal.SourceGeneration;
 
-internal static class GeneratorCommandProvider
+internal static class GeneratorBindingsProvider
 {
     /// <summary>
     /// The transform is the part where we gather the information from the function that we need later.
@@ -17,15 +18,15 @@ internal static class GeneratorCommandProvider
         if (ctx.TargetSymbol is not IMethodSymbol methodSymbol)
             return null!;
 
-        //string name2 = ctx.Attributes[0].AttributeClass.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         AttributeData? commandAttribute = ctx.Attributes.FirstOrDefault(a => a.AttributeClass is not null 
             && a.AttributeClass.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.CommandLine.Minimal.CommandAttribute");
         string? commandName = commandAttribute?.ConstructorArguments.FirstOrDefault().Value as string;
 
-        string classNamespace = methodSymbol.ContainingNamespace.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+        string classNamespace = methodSymbol.ContainingNamespace.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         string className = methodSymbol.ContainingType.Name;
         string methodName = methodSymbol.Name;
-        string methodReturnType = methodSymbol.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        string methodReturnType = methodSymbol.ReturnType.ToDisplayString(NullableFlowState.None, SymbolDisplayFormat.FullyQualifiedFormat);
+        bool methodIsStatic = methodSymbol.IsStatic;
 
         ImmutableArray<IParameterSymbol> parameters = methodSymbol.Parameters;
 
@@ -35,7 +36,7 @@ internal static class GeneratorCommandProvider
             ImmutableArray<AttributeData> attributes = param.GetAttributes();
             bool hasDefault = param.HasExplicitDefaultValue;
             string name = param.Name;
-            string type = param.Type.ToDisplayString();
+            string type = param.Type.ToDisplayString(NullableFlowState.None, SymbolDisplayFormat.FullyQualifiedFormat);
 
             AttributeData? fromServicesAttribute = attributes.FirstOrDefault(a => a.AttributeClass
                 ?.ToDisplayString() == "FromServices");
@@ -63,6 +64,7 @@ internal static class GeneratorCommandProvider
             ClassName: className,
             MethodName: methodName,
             MethodReturnType: methodReturnType,
+            MethodIsStatic: methodIsStatic,
             Bindings: bindings.ToImmutableArray());
     }
 
@@ -94,22 +96,15 @@ internal record GeneratingCommandBinder(
     string ClassName,
     string MethodName,
     string MethodReturnType,
+    bool MethodIsStatic,
     ImmutableArray<ParameterBinding>? Bindings
 )
 {
-    public string CommandHelpName
-    {
-        get
-        {
-            return this.CommandHelpName;
-        }
-    }
+    public string CommandHelpName => Conventions.ParameterNameConversion.ToArgumentName(this.CommandName ?? "");
     public string CommandNameTitleCase => this.CommandName?.ToSymbolName() ?? "";
-    public string CommandOptionsName => this.CommandNameTitleCase + "CommandOptions";
-
-    public string FullClassName => this.ClassNamespace + '.' + this.ClassName;
-    public string FullMethodName => this.FullClassName + '.' + this.MethodName;
-
+    public string CommandOptionsName => $"{this.CommandNameTitleCase}CommandOptions";
+    public string FullClassName => $"{this.ClassNamespace}.{this.ClassName}";
+    public string FullMethodName => $"{this.FullClassName}.{this.MethodName}";
 }
 
 internal abstract record ParameterBinding(string OriginalParameterName, string Type)
@@ -134,20 +129,20 @@ internal abstract record ParameterBinding(string OriginalParameterName, string T
 internal record ArgumentBinding(string OriginalParameterName, string Type)
     : ParameterBinding(OriginalParameterName, Type)
 {
-    public string ConventionalArgumentName
-    {
-        get
-        {
-            char c = char.ToUpper(this.OriginalParameterName[0]);
-            return c + this.OriginalParameterName.Substring(1);
-        }
-    }
+    /// <summary>
+    /// The Argument name in title case, e.g. "myParameterName" becomes "My Parameter Name"
+    /// </summary>
+    public string ConventionalArgumentName 
+        => Conventions.ParameterNameConversion.ToArgumentName(this.OriginalParameterName);
 }
 internal record OptionBinding(string OriginalParameterName, string Type)
     : ParameterBinding(OriginalParameterName, Type)
 {
-    // TODO: kebab
-    public string OptionName => "--" + this.OriginalParameterName;
+    /// <summary>
+    /// The option name in kebab case, e.g. "myParameterName" becomes "--my-parameter-name"
+    /// </summary>
+    public string OptionName 
+        => Conventions.ParameterNameConversion.ToOptionName(this.OriginalParameterName);
 }
 internal record FromServicesBinding(string OriginalParameterName, string Type)
     : ParameterBinding(OriginalParameterName, Type)

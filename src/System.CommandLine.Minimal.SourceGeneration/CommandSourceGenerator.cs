@@ -18,7 +18,7 @@ public class CommandSourceGenerator : IIncrementalGenerator
             .ForAttributeWithMetadataName(
                 "System.CommandLine.Minimal.CommandAttribute",
                 predicate: MethodDeclPredicate,
-                transform: GeneratorCommandProvider.Transform
+                transform: GeneratorBindingsProvider.Transform
             ).Collect();
 
         context.RegisterSourceOutput(bindersProvider, (spc, binders) => {
@@ -34,10 +34,10 @@ public class CommandSourceGenerator : IIncrementalGenerator
             }
 
             // Emit the aggregated Register method
-            string? registryCode = CommandRegistrationWriter.GenerateRegistrations(binders);
+            string? registryCode = MapAllCommandsExtensionWriter.GenerateMapAllCommandsExt(binders);
             if(registryCode is not null)
             {
-                spc.AddSource("RegisterCommandsHook.g.cs", registryCode);                
+                spc.AddSource("MapAllCommandsExtension.g.cs", registryCode);                
             }
         });
 
