@@ -40,7 +40,7 @@ internal class CommandExecutorShell : ICommandExecutor
                 }
 
                 if (result!.Errors.Count == 0)
-                    await result.InvokeAsync(this.applicationLifetime.ApplicationStopping);
+                    await result.InvokeAsync(cancellationToken: this.applicationLifetime.ApplicationStopping);
                 else
                     ShowParserErrors(result!);
             }

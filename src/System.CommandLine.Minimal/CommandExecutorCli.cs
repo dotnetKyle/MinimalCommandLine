@@ -34,7 +34,7 @@ internal class CommandExecutorCli : ICommandExecutor
         }
 
         // if an action is found, this is likely a help or version information call
-        return await parseResult.InvokeAsync(this.applicationLifetime.ApplicationStopping);
+        return await parseResult.InvokeAsync(cancellationToken:this.applicationLifetime.ApplicationStopping);
     }
     public int Execute(RootCommand rootCommand, string[] args)
     {
