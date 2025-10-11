@@ -1,63 +1,121 @@
 # System.CommandLine.Minimal
 
-> A set of minimal builders that sits on top of the 
-> `System.CommandLine` namespace to give an experience 
-> similar to the ASP.Net Core minimal API builders.
+> A set of minimal builders that sits on top of the `System.CommandLine` namespace 
+> to give an experience similar to the ASP.Net Core minimal API builders. This library 
+> uses the Hosting builders so a dotnet developer feels at home.
 > 
 > ### Primary Goal:
 > 
-> The primary goal of this library design is to give the developer 
-> the option to use one of the following approaches:
->  * **[Inline Approach](#inline-approach):** To put the logic directly with the API design, which allows for maximum readability.
->  * **[Separate Approach (static class)](#separate-approach-static-class):** Separate the API design from the actual logic using a static handler, which allows for high testability.
->  * **[Separate Approach (instance class)](#separate-approach-instance-class-with-dependency-injection):** Separate the API from the logic using an instance class, which allows for dependency injection and high testability.
+> The primary goal of this library design is to give the developer the power to 
+> easily with minimal effort get started with System.CommandLine and to create commands
+> with minimal boilerplate.
 
 ### Hello World:
+
+First, create a new console application, then create a class to house the logic for your command:
 
 ```csharp
 using System.CommandLine.Minimal;
 
-MinimalCommandLineBuilder app = new(args)
-    .Build();
+public class HelloWorld
+{
+    // The command attribute sets up source generation to recognize and map your 
+    //   command, the handler, and all of it's parameters
+    [Command("hello")]
+    public void Execute(string message)
+    {
+        Console.WriteLine("Hello World!  {0}", message);
+    }
+}
+```
 
-app.AddRootDescription("A simple demo app for the command line.")
-    .AddRootArgument<string>("Message")
-    .AddRootOption<string>("--first-option", opt => opt.AddAlias("-o1"))
-    .AddRootOption<string>("--second-option")
-    .SetRootHandler(
-        (string message, string option1, string option2) =>
-        {
-            Console.WriteLine($"Hello World!  {message}");
-            Console.WriteLine($"  Option 1:{option1}, Option2 {option2}");
-        }
-    );
+Next, setup your Console App's `Program.cs` file:
+
+```csharp
+using System.CommandLine.Minimal;
+
+var builder = new MinimalCommandLineBuilder(args)
+
+// this is a source generated extension that will map all your commands
+builder.MapAllCommands();
+
+var app = builder.Build();
 
 await app.StartAsync();
 ```
 
-## Getting Started
+This will map the HelloWorld class's Execute function to a command called `hello` with a 
+string Argument called `Message`.
 
-`git clone https://github.com/dotnetKyle/MinimalCommandLine.git`
+## Installing MinimalCommandLine
 
-### Using Visual Studio:
+Add a reference to the nuget package `MinimalCommandLine`.
 
-Set DemoApp as the startup project.
+- Via csproj: `<PackageReference Include="MinimalCommandLine" Version="0.5.0.10" />`
+- Via dotnet cli: `dotnet package add MinimalCommandLine`
+- Via Visual Studio Menu: 
+    * Tools >
+    * NuGet Package Manager > 
+    * Manage NuGet Packages for Solution...
+    * Search for "MinimalCommandLine"
+    * Select the package
+    * Select the project you want to install it into
+    * Hit Install
 
-Check the Properties/launchSettings.json file, ensure that the `commandLineArgs` property is set to `-h`
-
-### Using the dotnet CLI:
-
-```shell
-dotnet build DemoApp.csproj -c Debug
-
-cd \bin\Debug\net8.0\
-
-DemoApp.exe -h
-```
 
 ## Simple Examples:
 
-### Inline Approach:
+### Simple Command - Conventions
+
+A simple command with an Argument and an Option:
+
+```csharp
+using System.CommandLine.Minimal;
+
+public class MyCommand
+{
+    [Command("mycommand")]
+    public void Run(string myArgument, string? myOption = null)
+    {
+        Console.WriteLine("Arg:{0}, Option:{0}", myArgument, myOption);
+    }
+}
+```
+
+This registers a command called `mycommand`, with an Argument called `MyArgument`, and an Option 
+called `--my-option`. It can be called like this:
+
+```bash
+mycommand "Foo" --my-option "Bar"
+```
+
+Conventionally a `System.CommandLine.Argument` is created when the parameter is not optional and 
+a `System.CommandLine.Option` is created when the parameter is optional.
+
+### Modifying Conventions
+
+A simple command with two Arguments a required Argument and an optional Argument:
+
+
+```csharp
+using System.CommandLine.Minimal;
+
+public class MyCommand
+{
+    [Command("mycommand")]
+    public void Execute(string myArgument, [Argument] string? myArgument2 = null)
+    {
+        Console.WriteLine("Arg:{0}, Arg2:{0}", myArgument, myArgument2);
+    }
+}
+```
+
+Note: the use of the `[Argument]` attribute tells the source generator to treat this 
+Argument as optional.
+
+
+### Documentation Examples:
+
 
 The API and the application logic are together.  Uses an `Action<Task>` directly in the Program.cs.
 
@@ -243,4 +301,29 @@ public class FileSystemSerialNumberProvider : IFileSystemSerialNumberProvider
 {
   // Truncated for brevity
 }
+```
+
+
+
+
+
+
+## Contributors - Getting Started
+
+`git clone https://github.com/dotnetKyle/MinimalCommandLine.git`
+
+### Using Visual Studio:
+
+Set DemoApp as the startup project.
+
+Check the Properties/launchSettings.json file, ensure that the `commandLineArgs` property is set to `-h`
+
+### Using the dotnet CLI:
+
+```shell
+dotnet build DemoApp.csproj -c Debug
+
+cd \bin\Debug\net8.0\
+
+DemoApp.exe -h
 ```
