@@ -30,7 +30,7 @@ public class MinimalCommandLineBuilder : IHostApplicationBuilder
 
     List<CommandOptions> commandOptionsCollection = new();
     public TOptions TryRegisterCommandOptions<TOptions>()
-        where TOptions : CommandOptions
+        where TOptions : CommandOptions, new()
     {
         // this needs to be idempotent so that the CommandOptions won't accidently get registered more than once.
         foreach(CommandOptions options in this.commandOptionsCollection)
@@ -39,8 +39,8 @@ public class MinimalCommandLineBuilder : IHostApplicationBuilder
                 return alreadyConfiguredOptions;
         }
 
-        TOptions newOptions = Activator.CreateInstance(typeof(TOptions)) as TOptions 
-            ?? throw new InvalidOperationException("The CommandOptions implementation must have an empty constructor.");
+        // source generated TOptions all have empty constructors
+        TOptions newOptions = new();
 
         this.commandOptionsCollection.Add(newOptions);
 
