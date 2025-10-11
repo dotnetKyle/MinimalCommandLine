@@ -1,27 +1,26 @@
 ﻿using System.Collections.Generic;
 
-namespace System.CommandLine.Minimal.Bindings
+namespace System.CommandLine.Minimal.Bindings;
+
+public class CommandBindingFactory
 {
-    public class CommandBindingFactory
+    readonly Dictionary<string, CommandOptions> options;
+
+    public CommandBindingFactory()
     {
-        readonly Dictionary<string, CommandOptions> options;
+        this.options = [];
+    }
 
-        public CommandBindingFactory()
-        {
-            this.options = [];
-        }
+    public void AddCommandOptions(string commandName, CommandOptions options)
+    {
+        this.options.Add(commandName, options);
+    }
 
-        public void AddCommandOptions(string commandName, CommandOptions options)
-        {
-            this.options.Add(commandName, options);
-        }
+    public CommandOptions? TryGetOptionsFor(string commandName)
+    {
+        if(this.options.TryGetValue(commandName, out CommandOptions? binding))
+            return binding;
 
-        public CommandOptions? TryGetOptionsFor(string commandName)
-        {
-            if(this.options.TryGetValue(commandName, out CommandOptions? binding))
-                return binding;
-
-            return null;
-        }
+        return null;
     }
 }

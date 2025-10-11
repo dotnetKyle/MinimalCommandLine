@@ -1,6 +1,4 @@
-﻿using System.CommandLine.Parsing;
-
-namespace System.CommandLine.Minimal;
+﻿namespace System.CommandLine.Minimal;
 
 public class OptionBuilder<T>
 {

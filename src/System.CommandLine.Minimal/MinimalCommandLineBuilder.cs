@@ -5,9 +5,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.CommandLine.Minimal.Bindings;
-using System.Linq;
 
 namespace System.CommandLine.Minimal;
+
 public class MinimalCommandLineBuilder : IHostApplicationBuilder
 { 
     private readonly string[] args;
@@ -131,6 +131,7 @@ public class MinimalCommandLineBuilder : IHostApplicationBuilder
         this.cmdExecutionMode = CommandExecutionMode.ShellRequired;
         return this;
     }
+
     /// <summary>
     /// Disable shell mode for execution, this requires CLI mode for the user.
     /// <para>The default is CLI Mode but shell mode is allowed.</para>

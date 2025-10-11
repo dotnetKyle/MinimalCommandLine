@@ -1,7 +1,6 @@
-﻿namespace System.CommandLine.Minimal.Bindings
+﻿namespace System.CommandLine.Minimal.Bindings;
+
+public record DependencyInjectionBinding(string ParameterName, Type ParameterType)
+    : ParameterBinding(ParameterName, ParameterType)
 {
-    public record DependencyInjectionBinding(string ParameterName, Type ParameterType)
-        : ParameterBinding(ParameterName, ParameterType)
-    {
-    }
 }

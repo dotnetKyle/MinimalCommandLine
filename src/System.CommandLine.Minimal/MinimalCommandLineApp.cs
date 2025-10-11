@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace System.CommandLine.Minimal;
+
 public class MinimalCommandLineApp : IHostedService
 {
     private readonly string[] args;

@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Hosting;
 using System.CommandLine.Minimal.Bindings;
 using System.CommandLine.Parsing;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace System.CommandLine.Minimal;
+
 internal class CommandExecutorCli : ICommandExecutor
 {
     private readonly IHostApplicationLifetime applicationLifetime;
