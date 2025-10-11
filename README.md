@@ -65,7 +65,7 @@ Add a reference to the nuget package `MinimalCommandLine`.
 
 ## Simple Examples:
 
-### Simple Command - Conventions
+### Simple Command - Defaults:
 
 A simple command with an Argument and an Option:
 
@@ -89,13 +89,12 @@ called `--my-option`. It can be called like this:
 mycommand "Foo" --my-option "Bar"
 ```
 
-Conventionally a `System.CommandLine.Argument` is created when the parameter is not optional and 
+Conventionally a `System.CommandLine.Argument` is created when the parameter is required and 
 a `System.CommandLine.Option` is created when the parameter is optional.
 
-### Modifying Conventions
+### Modifying Default Conventions:
 
-A simple command with two Arguments a required Argument and an optional Argument:
-
+A simple command with two Arguments: a required Argument and an optional Argument:
 
 ```csharp
 using System.CommandLine.Minimal;
@@ -110,9 +109,43 @@ public class MyCommand
 }
 ```
 
-Note: the use of the `[Argument]` attribute tells the source generator to treat this 
-Argument as optional.
+Note: the use of the `[Argument]` attribute tells the source generator to generate this 
+optional parameter as an Argument instead of an Option.
 
+### Command Documentation:
+
+After adding a command, you can add documentation for your command in the Program.cs file. After 
+registering a command, the source generator creates an extension method that you can use to modify 
+the descriptions, aliases, default values, and any other System.CommandLine functionality.
+
+```csharp
+using System.CommandLine.Minimal;
+
+// after creating a 'greet' command that accepts a 'name' argument:
+
+var builder = new MinimalCommandLineBuilder(args)
+
+// this is a source generated extension for modifying your command's configuration:
+builder.MapGreetCommand(config => 
+{
+    // set the configuration for the overall command
+    config.Command.Description = "Greets a person with a friendly message.";
+
+    // set the docs for the command args and options:
+    config.NameArgument.Description = "The name of the person to greet."
+
+    config.ToneOption.Description = "The optional tone of the greeting, e.g. formal.";
+});
+
+var app = builder.Build();
+
+await app.StartAsync();
+```
+
+
+### Dependency Injection:
+
+You can use dependency injection with your commands so you can share logic across all commands
 
 ### Documentation Examples:
 
