@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.CommandLine.Minimal;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 namespace DemoApp.Services;
@@ -11,10 +12,11 @@ public class IntermediateCaGenerator
         _serialNumberProvider = serialNumberProvider;
     }
 
+    [Command(name:"intermediate")]
     public async Task GenerateCaAsync(
         string commonName,
         string issuerFilePath,
-        string[] OUs,
+        [Option] string[] OUs,
         string? organization = null,
         string? country = null,
         string? filePath = null,

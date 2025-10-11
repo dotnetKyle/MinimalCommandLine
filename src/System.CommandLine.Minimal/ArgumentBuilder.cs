@@ -1,6 +1,4 @@
-﻿using System.CommandLine.Binding;
-
-namespace System.CommandLine.Minimal;
+﻿namespace System.CommandLine.Minimal;
 
 public class ArgumentBuilder<T>
 {

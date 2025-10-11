@@ -2,25 +2,30 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Collections.Generic;
+using System.CommandLine.Minimal.Bindings;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace System.CommandLine.Minimal;
+
 public class MinimalCommandLineApp : IHostedService
 {
     private readonly string[] args;
     private readonly CommandExecutionMode cmdExecutionMode;
+    private readonly IReadOnlyList<CommandOptions> commandOptionsCollection;
+
     private CommandExecutorCli CliCommandExecutor => this.Services.GetRequiredService<CommandExecutorCli>();
     private CommandExecutorShell ShellCommandExecutor => this.Services.GetRequiredService<CommandExecutorShell>();
 
-    internal MinimalCommandLineApp(MinimalCommandLineBuilder builder, string[] args)
+    internal MinimalCommandLineApp(MinimalCommandLineBuilder builder, IReadOnlyList<CommandOptions> commandOptionsCollection, string[] args)
     {
         this.Host = builder.builder.Build();
+        this.commandOptionsCollection = commandOptionsCollection;
         this.cmdExecutionMode = builder.cmdExecutionMode;
         this.Configuration = builder.Configuration;
         this.args = args;
-        this.RootCommand = new();
+        this.RootCommand = builder.RootCommand;
     }
 
     internal readonly Dictionary<string, Func<ParseResult, object?>> ArgumentParsers = new();

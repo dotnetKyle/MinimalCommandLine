@@ -24,6 +24,8 @@ internal class CommandExecutorShell : ICommandExecutor
         this.exitCommands = exitCommands;
     }
 
+    [Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisCorrectness", "RS1035:Do not use APIs banned for analyzers",
+        Justification = "This is not code that runs during analysis")]
     public async Task<int> ExecuteAsync(RootCommand rootCommand, string[] args)
     {
         try
@@ -51,6 +53,8 @@ internal class CommandExecutorShell : ICommandExecutor
 
         return 0;
     }
+    [Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisCorrectness", "RS1035:Do not use APIs banned for analyzers",
+       Justification = "This is not code that runs during analysis")]
     public int Execute(RootCommand rootCommand, string[] args)
     {
         try
@@ -79,6 +83,8 @@ internal class CommandExecutorShell : ICommandExecutor
         return 0;
     }
 
+    [Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisCorrectness", "RS1035:Do not use APIs banned for analyzers",
+        Justification = "This is not code that runs during analysis")]
     private static bool GetInput(RootCommand rootCommand, string prompt, string[] exitCommands, out ParseResult? result)
     {
         Console.Write(prompt + "> ");
@@ -97,6 +103,8 @@ internal class CommandExecutorShell : ICommandExecutor
         return true;
     }
 
+    [Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisCorrectness", "RS1035:Do not use APIs banned for analyzers", 
+        Justification = "This is not code that runs during analysis")]
     private static void ShowParserErrors(ParseResult result)
     {
         string errorPluralized = result.Errors.Count == 1 ? "an error" : "errors";

@@ -1,8 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace System.CommandLine.Minimal;
