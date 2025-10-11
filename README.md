@@ -145,7 +145,40 @@ await app.StartAsync();
 
 ### Dependency Injection:
 
-You can use dependency injection with your commands so you can share logic across all commands
+You can use dependency injection with your commands so you can share logic across all commands.
+
+```csharp
+public class GreeterCommand
+{
+    private MyInjectedClass _myInjectedClass;    
+    public GreeterCommand(MyInjectedClass myInjectedClass)
+    {
+        _myInjectedClass = myInjectedClass;
+    }
+
+    [Command("greet")]
+    public async Task ExecuteAsync(string name, string? tone = null)
+    {
+        // ... use _myInjectedClass here
+    }
+}
+```
+
+or
+
+```csharp
+public static class GreeterCommand
+{
+    [Command("greet")]
+    public static async Task ExecuteAsync(
+        string name, 
+        [FromServices] MyInjectedClass myInjectedClass,    
+        string? tone = null)
+    {
+        // ... use myInjectedClass here
+    }
+}
+```
 
 ### Documentation Examples:
 
