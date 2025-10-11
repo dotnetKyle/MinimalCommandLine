@@ -142,10 +142,15 @@ var app = builder.Build();
 await app.StartAsync();
 ```
 
+Now, when you user runs the `-h` Option for your app, or `greet -h` for the greet command they 
+will be presented with the documentation you have set up in the generated 
+`MapMyCommand(config => ..)` extensions. See the Demo project for a more complex example of this.
 
 ### Dependency Injection:
 
-You can use dependency injection with your commands so you can share logic across all commands.
+Instance command classes are automatically registered for dependency injection and they are 
+created via dependency injection as well.  You can use dependency injection with your commands 
+so you can share logic across all commands.
 
 ```csharp
 public class GreeterCommand
@@ -167,6 +172,7 @@ public class GreeterCommand
 or
 
 ```csharp
+// a static class command
 public static class GreeterCommand
 {
     [Command("greet")]
