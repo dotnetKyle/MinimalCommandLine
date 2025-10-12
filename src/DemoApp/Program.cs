@@ -5,6 +5,9 @@ using System.CommandLine.Minimal;
 
 MinimalCommandLineBuilder builder = new(args);
 
+builder.Services
+    .AddTransient<ISerialNumberProvider, FileSerialNumberProvider>();
+
 builder
     .MapRootCommand(configure =>
     {
@@ -119,9 +122,6 @@ builder
     });
 
 builder.MapAllCommands();
-
-builder.Services
-    .AddTransient<ISerialNumberProvider, FileSerialNumberProvider>();
 
 if(args.Any(arg => arg.Equals("--useShell", StringComparison.OrdinalIgnoreCase)))
 {

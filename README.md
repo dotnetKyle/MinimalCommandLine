@@ -1,41 +1,250 @@
 # System.CommandLine.Minimal
 
-> A set of minimal builders that sits on top of the 
-> `System.CommandLine` namespace to give an experience 
-> similar to the ASP.Net Core minimal API builders.
+> A source generator that sits on top of the `System.CommandLine` namespace 
+> to give an experience similar to the ASP.Net Core minimal API builders. This library 
+> uses the Hosting libraries so a dotnet developer feels at home.
 > 
 > ### Primary Goal:
 > 
-> The primary goal of this library design is to give the developer 
-> the option to use one of the following approaches:
->  * **[Inline Approach](#inline-approach):** To put the logic directly with the API design, which allows for maximum readability.
->  * **[Separate Approach (static class)](#separate-approach-static-class):** Separate the API design from the actual logic using a static handler, which allows for high testability.
->  * **[Separate Approach (instance class)](#separate-approach-instance-class-with-dependency-injection):** Separate the API from the logic using an instance class, which allows for dependency injection and high testability.
+> The primary goal of this library is to give a developer the power to get started with 
+> System.CommandLine and to create commands with minimal boilerplate. All you have to do 
+> to turn a function into a command is decorate it with the `[Command]` attribute!
+
+## Getting Started
 
 ### Hello World:
+
+First, create a new console application, then create a class to house the logic for your command:
 
 ```csharp
 using System.CommandLine.Minimal;
 
-MinimalCommandLineBuilder app = new(args)
-    .Build();
+public class HelloWorld
+{
+    // Just decorate the method with the command attribute!
+    [Command("hello")]
+    public void Execute(string message)
+    {
+        Console.WriteLine("Hello World!  {0}", message);
+    }
+}
+```
 
-app.AddRootDescription("A simple demo app for the command line.")
-    .AddRootArgument<string>("Message")
-    .AddRootOption<string>("--first-option", opt => opt.AddAlias("-o1"))
-    .AddRootOption<string>("--second-option")
-    .SetRootHandler(
-        (string message, string option1, string option2) =>
-        {
-            Console.WriteLine($"Hello World!  {message}");
-            Console.WriteLine($"  Option 1:{option1}, Option2 {option2}");
-        }
-    );
+Next, setup your Console App's `Program.cs` file:
+
+```csharp
+using System.CommandLine.Minimal;
+
+var builder = new MinimalCommandLineBuilder(args)
+
+// this is a source generated extension that will map all your commands
+builder.MapAllCommands();
+
+var app = builder.Build();
 
 await app.StartAsync();
 ```
 
-## Getting Started
+This will map the HelloWorld class's `void Execute(..)` function to a command called `"hello"`, and it 
+will map the parameter `message` to a string Argument called `<Message>`.
+
+## Installing MinimalCommandLine
+
+Add a reference to the nuget package `MinimalCommandLine`.
+
+- Via csproj: `<PackageReference Include="MinimalCommandLine" Version="0.5.0.10" />`
+- Via dotnet cli: `dotnet package add MinimalCommandLine`
+- Via Visual Studio Menu: 
+    * Tools >
+    * NuGet Package Manager > 
+    * Manage NuGet Packages for Solution...
+    * Search for "MinimalCommandLine"
+    * Select the package
+    * Select the project you want to install it into
+    * Hit Install
+
+## Simple Examples:
+
+### Simple Command - Defaults:
+
+A simple command with an Argument and an Option:
+
+```csharp
+using System.CommandLine.Minimal;
+
+public class MyCommand
+{
+    [Command("mycommand")]
+    public void Run(string myArgument, string? myOption = null)
+    {
+        Console.WriteLine("Arg:{0}, Option:{0}", myArgument, myOption);
+    }
+}
+```
+
+This registers the following:
+ * A command called `mycommand` to the handler `void Run(..)`.
+ * The parameter `myArgument` to an Argument called `<MyArgument>`.
+ * The optional parameter `myOption` to an Option called `--my-option`. 
+
+The command can be called like this:
+
+```bash
+mycommand "Foo" --my-option "Bar"
+```
+
+Conventionally a `System.CommandLine.Argument` is created when the parameter is required and 
+a `System.CommandLine.Option` is created when the parameter is optional.
+
+### Modifying Default Conventions:
+
+A simple command with two Arguments: a required Argument and an optional Argument:
+
+```csharp
+using System.CommandLine.Minimal;
+
+public class MyCommand
+{
+    [Command("mycommand")]
+    public void Execute(string myArgument, [Argument] string? myArgument2 = null)
+    {
+        Console.WriteLine("Arg:{0}, Arg2:{0}", myArgument, myArgument2);
+    }
+}
+```
+
+Note: the use of the `[Argument]` attribute tells the source generator to generate this 
+optional parameter as an Argument instead of an Option.
+
+### Command Documentation:
+
+After adding a command, you can add documentation for your command in the Program.cs file. After 
+registering a command, the source generator creates an extension method that you can use to modify 
+the descriptions, aliases, default values, and any other System.CommandLine functionality.
+
+```csharp
+using System.CommandLine.Minimal;
+
+// after creating a 'greet' command that accepts a 'name' argument:
+
+var builder = new MinimalCommandLineBuilder(args)
+
+// this is a source generated extension for modifying your command's configuration:
+builder.MapGreetCommand(config => 
+{
+    // set the configuration for the overall command
+    config.Command.Description = "Greets a person with a friendly message.";
+
+    // set the docs for the command args and options:
+    config.NameArgument.Description = "The name of the person to greet."
+
+    config.ToneOption.Description = "The optional tone of the greeting, e.g. formal.";
+});
+
+var app = builder.Build();
+
+await app.StartAsync();
+```
+
+Now, when you user runs the `-h` Option for your app, or `greet -h` for the greet command they 
+will be presented with the documentation you have set up in the generated 
+`MapMyCommand(config => ..)` extensions. See the Demo project for a more complex example of this.
+
+### Dependency Injection:
+
+Instance command classes are automatically registered for dependency injection and they are 
+created via dependency injection as well.  You can use dependency injection with your commands 
+so you can share logic across all commands.
+
+```csharp
+public class GreeterCommand
+{
+    private MyInjectedClass _myInjectedClass;    
+    public GreeterCommand(MyInjectedClass myInjectedClass)
+    {
+        _myInjectedClass = myInjectedClass;
+    }
+
+    [Command("greet")]
+    public async Task ExecuteAsync(string name, string? tone = null)
+    {
+        // ... use _myInjectedClass here
+    }
+}
+```
+
+or
+
+```csharp
+// a static class command
+public static class GreeterCommand
+{
+    [Command("greet")]
+    public static async Task ExecuteAsync(
+        string name, 
+        [FromServices] MyInjectedClass myInjectedClass,    
+        string? tone = null)
+    {
+        // ... use myInjectedClass here
+    }
+}
+```
+
+### Complex Configuration Example:
+
+Here is snippet from the demo project that demonstrates configuring a complex command used to 
+create a certificate.
+
+```csharp
+MinimalCommandLineBuilder builder = new(args);
+
+builder
+    .MapSslCommand(configure => 
+    {
+        configure.Command.Description = "Create an SSL certificate.";
+
+        configure.CommonNameArgument.Description = "Add a common name to the certificate's subject name.";
+
+        configure.IssuerFilePath2Argument.Description = "Add the file path to the Issuer CA.";
+
+        configure.DNSNamesOption.Description = "Add one or more DNS names.";
+        configure.DNSNamesOption.Aliases.Add("-dns");
+
+        configure.IPAddressesOption.Description = "Add one or more IP Addresses.";
+        configure.IPAddressesOption.Aliases.Add("-ip");
+
+        configure.OUsOption.Description = "Add one or more OUs to the certificate's subject name.";
+        configure.OUsOption.Aliases.Add("-ou");
+
+        configure.OrganizationOption.Description = "Add an Organization to the certificate's subject name.";
+        configure.OrganizationOption.Aliases.Add("-o");
+
+        configure.CountryOption.Description = "Add an Organization to the certificate's subject name.";
+        configure.CountryOption.Aliases.Add("-c");
+
+        configure.Public_filePathOption.Description = "Override the default export path for the public certificate.";
+        configure.Public_filePathOption.Aliases.Add("-pub");
+        configure.Public_filePathOption.DefaultValueFactory = _ => Path.Combine(Environment.CurrentDirectory, "ssl-pub.pfx");
+
+        configure.Private_filePathOption.Description = "Override the default export path for the private certificate.";
+        configure.Private_filePathOption.Aliases.Add("-prv");
+        configure.Private_filePathOption.DefaultValueFactory = _ => Path.Combine(Environment.CurrentDirectory, "ssl-prv.pfx");
+
+        configure.NotBeforeDateOption.Description = "Add a date that the certificate cannot be used before.";
+        configure.NotBeforeDateOption.Aliases.Add("-nb");
+        configure.NotBeforeDateOption.DefaultValueFactory = _ => DateOnly.FromDateTime(DateTime.UtcNow);
+
+        configure.NotAfterDateOption.Description = "Add a date that the certificate cannot be used after.";
+        configure.NotAfterDateOption.Aliases.Add("-na");
+        configure.NotAfterDateOption.DefaultValueFactory = _ => DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1));
+
+        configure.RsaSizeInBitsOption.Description = "Change the default RSA size (as measured in bits).";
+        configure.RsaSizeInBitsOption.Aliases.Add("-rsa"); 
+        configure.RsaSizeInBitsOption.DefaultValueFactory = _ => 2048;
+    });
+```
+
+## Contributors - Getting Started
 
 `git clone https://github.com/dotnetKyle/MinimalCommandLine.git`
 
@@ -53,194 +262,4 @@ dotnet build DemoApp.csproj -c Debug
 cd \bin\Debug\net8.0\
 
 DemoApp.exe -h
-```
-
-## Simple Examples:
-
-### Inline Approach:
-
-The API and the application logic are together.  Uses an `Action<Task>` directly in the Program.cs.
-
-```csharp
-// Program.cs
-
-MinimalCommandLineBuilder = new(args);
-
-MinimalCommandLineApp app = builder.Build();
-
-app.AddRootDescription("Create X509Certificates.");
-
-// generate a root CA certificate
-app.AddCommand("rootCA"
-  cmdOptions => 
-  {
-    cmdOptions
-      .AddCommandDescription("Create a self-signed root certificate authority.")
-      .AddArgument<string>("CommonName", argument =>
-        argument.AddHelpName("Common Name")
-          .AddDescription("Add a common name to the certificate's subject name.")
-      )
-        .AddOption<string[]>("-ou", option =>
-          option.AddAlias("--organizational-unit")
-            .AddDescription(
-              "Add one or more Organizational Units (OUs) to the certificate's subject name."
-            )
-          )
-        .AddOption<DateOnly>("-na", option =>
-          option.AddAlias("--not-after")
-            .AddDescription("Add a date that the certificate cannot be used after.")
-            .AddDefaultValue(DateOnly.FromDateTime(DateTime.UtcNow.AddYears(10)))
-          )
-        // Bind the application logic here
-        .SetHandler(async (string commonName, string[] OUs, DateOnly notAfter) =>
-        {
-          var notAfterDate = notAfter.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-
-          if (OUs is null)
-            OUs = Array.Empty<string>();
-
-          var filePath = Path.Combine(Environment.CurrentDirectory, "rootCA.pfx");
-
-          var subjectName = $"CN={commonName}";
-
-          foreach (var ou in OUs)
-            subjectName += $", OU={ou}";
-
-          subjectName += $", O=Your Org Name Here, C=USA";
-
-          using (var rsa = RSA.Create(2048))
-          {
-            var req = new CertificateRequest(
-              subjectName,
-              rsa,
-              HashAlgorithmName.SHA256,
-              RSASignaturePadding.Pkcs1);
-
-            req.CertificateExtensions.Add(
-              new X509BasicConstraintsExtension(true, false, 0, true)
-            );
-
-            using (var cert = req.CreateSelfSigned(DateTime.UtcNow,notAfterDate))
-            {
-              var pfx = cert.Export(X509ContentType.Pfx);
-
-              await File.WriteAllBytesAsync(filePath, pfx);
-
-              Console.WriteLine(filePath);
-            }
-          }
-        })
-  });
-
-await app.StartAsync();
-```
-
-### Separate Approach (static class):
-
-Same logic as above but inside a static method allows for the parameters to 
-have optional values (which are automatically to the API help convention).
-
-```csharp
-// Program.cs
-
-MinimalCommandLineBuilder builder = new(args);
-
-MinimalCommandLineApp app = builder.Build();
-
-app.AddRootDescription("Create X509Certificates.");
-
-// generate a rootCA certificate
-app.AddCommand("rootCA"
-  cmdOptions => 
-  {
-    cmdOptions
-      .AddCommandDescription("Create a self-signed root certificate authority.")
-      .AddArgument<string>("CommonName", argument =>
-        argument.AddHelpName("Common Name")
-          .AddDescription("Add a common name to the certificate's subject name.")
-      )
-        .AddOption<string[]>("-ou", option =>
-          option.AddAlias("--organizational-unit")
-            .AddDescription("Add one or more OUs to the certificate's subject name.")
-          )
-        .AddOption<string>("-o", option =>
-          option.AddAlias("--organization")
-            .AddDescription("Override the default organization name.")
-          )
-        // Use a static method for the application logic
-        .SetHandler(RootCaGenerator.GenerateSelfSigned);
-    });
-
-await app.StartAsync();
-
-public static class RootCaGenerator
-{
-  public static async Task GenerateSelfSigned(
-      string commonName, 
-      string[] OUs, 
-      string organization = "Your Org Here")
-  {
-    // Truncated for brevity
-  }
-}
-```
-
-### Separate Approach (instance class with dependency injection):
-
-Uses a class instance and gets dependencies from DI.
-
-```csharp
-// Program.cs
-
-
-// add the command and it's dependencies to Dependency Injection (DI)
-MinimalCommandLineBuilder builder = new(args)
-  .AddTransient<ISerialNumberProvider, FileSystemSerialNumberProvider>()
-  .AddTransient<IntermediateCaGenerator>();
-
-MinimalCommandLineApp app = builder.Build();
-
-app.AddRootDescription("Create X509Certificates.");
-
-// generate a intermediateCA certificate
-app.MapCommand<IntermediateCaGenerator>("intermediateCA", 
-  // this parameter is a binder to map the command to the instance method containing the application logic
-  handler => handler.GenerateCaAsync,
-  cmdOptions => 
-  {
-    cmdOptions
-      .AddCommandDescription("Create a intermediate certificate authority.")
-      .AddArgument<string>("CommonName", argument =>
-        argument.AddHelpName("Common Name")
-          .AddDescription("Add a common name to the certificate's subject name.")
-      )
-      .AddArgument<string>("IssuerCertificate", argument =>
-        argument.AddHelpName("Issuer Certificate")
-          .AddDescription("Add an issuer certificate with its private key.")
-      )
-      .AddOption<string[]>("-ou", option =>
-        // truncated for brevity
-    });
-
-await app.StartAsync();
-
-
-public class IntermediateCaGenerator
-{
-  ISerialNumberProvider _serialNumberProvider;
-  public IntermediateCaGenerator(ISerialNumberProvider serialNumberProvider)
-  {
-    _serialNumberProvider = serialNumberProvider;
-  }
-
-  public async Task GenerateCaAsync(string commonName, string issuerFilePath)
-  {
-    var certificateSerialNumber = _serialNumberProvider.NextSerialNumber();
-    // Truncated for brevity
-  }
-}
-public class FileSystemSerialNumberProvider : IFileSystemSerialNumberProvider
-{
-  // Truncated for brevity
-}
 ```
