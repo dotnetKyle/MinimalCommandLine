@@ -1,14 +1,16 @@
 # System.CommandLine.Minimal
 
-> A set of minimal builders that sits on top of the `System.CommandLine` namespace 
+> A source generator that sits on top of the `System.CommandLine` namespace 
 > to give an experience similar to the ASP.Net Core minimal API builders. This library 
-> uses the Hosting builders so a dotnet developer feels at home.
+> uses the Hosting libraries so a dotnet developer feels at home.
 > 
 > ### Primary Goal:
 > 
-> The primary goal of this library design is to give the developer the power to 
-> easily with minimal effort get started with System.CommandLine and to create commands
-> with minimal boilerplate.
+> The primary goal of this library is to give a developer the power to get started with 
+> System.CommandLine and to create commands with minimal boilerplate. All you have to do 
+> to turn a function into a command is decorate it with the `[Command]` attribute!
+
+## Getting Started
 
 ### Hello World:
 
@@ -19,8 +21,7 @@ using System.CommandLine.Minimal;
 
 public class HelloWorld
 {
-    // The command attribute sets up source generation to recognize and map your 
-    //   command, the handler, and all of it's parameters
+    // Just decorate the method with the command attribute!
     [Command("hello")]
     public void Execute(string message)
     {
@@ -61,7 +62,6 @@ Add a reference to the nuget package `MinimalCommandLine`.
     * Select the package
     * Select the project you want to install it into
     * Hit Install
-
 
 ## Simple Examples:
 
@@ -186,199 +186,59 @@ public static class GreeterCommand
 }
 ```
 
-### Documentation Examples:
+### Complex Configuration Example:
 
-
-The API and the application logic are together.  Uses an `Action<Task>` directly in the Program.cs.
-
-```csharp
-// Program.cs
-
-MinimalCommandLineBuilder = new(args);
-
-MinimalCommandLineApp app = builder.Build();
-
-app.AddRootDescription("Create X509Certificates.");
-
-// generate a root CA certificate
-app.AddCommand("rootCA"
-  cmdOptions => 
-  {
-    cmdOptions
-      .AddCommandDescription("Create a self-signed root certificate authority.")
-      .AddArgument<string>("CommonName", argument =>
-        argument.AddHelpName("Common Name")
-          .AddDescription("Add a common name to the certificate's subject name.")
-      )
-        .AddOption<string[]>("-ou", option =>
-          option.AddAlias("--organizational-unit")
-            .AddDescription(
-              "Add one or more Organizational Units (OUs) to the certificate's subject name."
-            )
-          )
-        .AddOption<DateOnly>("-na", option =>
-          option.AddAlias("--not-after")
-            .AddDescription("Add a date that the certificate cannot be used after.")
-            .AddDefaultValue(DateOnly.FromDateTime(DateTime.UtcNow.AddYears(10)))
-          )
-        // Bind the application logic here
-        .SetHandler(async (string commonName, string[] OUs, DateOnly notAfter) =>
-        {
-          var notAfterDate = notAfter.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-
-          if (OUs is null)
-            OUs = Array.Empty<string>();
-
-          var filePath = Path.Combine(Environment.CurrentDirectory, "rootCA.pfx");
-
-          var subjectName = $"CN={commonName}";
-
-          foreach (var ou in OUs)
-            subjectName += $", OU={ou}";
-
-          subjectName += $", O=Your Org Name Here, C=USA";
-
-          using (var rsa = RSA.Create(2048))
-          {
-            var req = new CertificateRequest(
-              subjectName,
-              rsa,
-              HashAlgorithmName.SHA256,
-              RSASignaturePadding.Pkcs1);
-
-            req.CertificateExtensions.Add(
-              new X509BasicConstraintsExtension(true, false, 0, true)
-            );
-
-            using (var cert = req.CreateSelfSigned(DateTime.UtcNow,notAfterDate))
-            {
-              var pfx = cert.Export(X509ContentType.Pfx);
-
-              await File.WriteAllBytesAsync(filePath, pfx);
-
-              Console.WriteLine(filePath);
-            }
-          }
-        })
-  });
-
-await app.StartAsync();
-```
-
-### Separate Approach (static class):
-
-Same logic as above but inside a static method allows for the parameters to 
-have optional values (which are automatically to the API help convention).
+Here is snippet from the demo project that demonstrates configuring a complex command used to 
+create a certificate.
 
 ```csharp
-// Program.cs
-
 MinimalCommandLineBuilder builder = new(args);
 
-MinimalCommandLineApp app = builder.Build();
+builder
+    .MapSslCommand(configure => 
+    {
+        configure.Command.Description = "Create an SSL certificate.";
 
-app.AddRootDescription("Create X509Certificates.");
+        configure.CommonNameArgument.Description = "Add a common name to the certificate's subject name.";
 
-// generate a rootCA certificate
-app.AddCommand("rootCA"
-  cmdOptions => 
-  {
-    cmdOptions
-      .AddCommandDescription("Create a self-signed root certificate authority.")
-      .AddArgument<string>("CommonName", argument =>
-        argument.AddHelpName("Common Name")
-          .AddDescription("Add a common name to the certificate's subject name.")
-      )
-        .AddOption<string[]>("-ou", option =>
-          option.AddAlias("--organizational-unit")
-            .AddDescription("Add one or more OUs to the certificate's subject name.")
-          )
-        .AddOption<string>("-o", option =>
-          option.AddAlias("--organization")
-            .AddDescription("Override the default organization name.")
-          )
-        // Use a static method for the application logic
-        .SetHandler(RootCaGenerator.GenerateSelfSigned);
+        configure.IssuerFilePath2Argument.Description = "Add the file path to the Issuer CA.";
+
+        configure.DNSNamesOption.Description = "Add one or more DNS names.";
+        configure.DNSNamesOption.Aliases.Add("-dns");
+
+        configure.IPAddressesOption.Description = "Add one or more IP Addresses.";
+        configure.IPAddressesOption.Aliases.Add("-ip");
+
+        configure.OUsOption.Description = "Add one or more OUs to the certificate's subject name.";
+        configure.OUsOption.Aliases.Add("-ou");
+
+        configure.OrganizationOption.Description = "Add an Organization to the certificate's subject name.";
+        configure.OrganizationOption.Aliases.Add("-o");
+
+        configure.CountryOption.Description = "Add an Organization to the certificate's subject name.";
+        configure.CountryOption.Aliases.Add("-c");
+
+        configure.Public_filePathOption.Description = "Override the default export path for the public certificate.";
+        configure.Public_filePathOption.Aliases.Add("-pub");
+        configure.Public_filePathOption.DefaultValueFactory = _ => Path.Combine(Environment.CurrentDirectory, "ssl-pub.pfx");
+
+        configure.Private_filePathOption.Description = "Override the default export path for the private certificate.";
+        configure.Private_filePathOption.Aliases.Add("-prv");
+        configure.Private_filePathOption.DefaultValueFactory = _ => Path.Combine(Environment.CurrentDirectory, "ssl-prv.pfx");
+
+        configure.NotBeforeDateOption.Description = "Add a date that the certificate cannot be used before.";
+        configure.NotBeforeDateOption.Aliases.Add("-nb");
+        configure.NotBeforeDateOption.DefaultValueFactory = _ => DateOnly.FromDateTime(DateTime.UtcNow);
+
+        configure.NotAfterDateOption.Description = "Add a date that the certificate cannot be used after.";
+        configure.NotAfterDateOption.Aliases.Add("-na");
+        configure.NotAfterDateOption.DefaultValueFactory = _ => DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1));
+
+        configure.RsaSizeInBitsOption.Description = "Change the default RSA size (as measured in bits).";
+        configure.RsaSizeInBitsOption.Aliases.Add("-rsa"); 
+        configure.RsaSizeInBitsOption.DefaultValueFactory = _ => 2048;
     });
-
-await app.StartAsync();
-
-public static class RootCaGenerator
-{
-  public static async Task GenerateSelfSigned(
-      string commonName, 
-      string[] OUs, 
-      string organization = "Your Org Here")
-  {
-    // Truncated for brevity
-  }
-}
 ```
-
-### Separate Approach (instance class with dependency injection):
-
-Uses a class instance and gets dependencies from DI.
-
-```csharp
-// Program.cs
-
-
-// add the command and it's dependencies to Dependency Injection (DI)
-MinimalCommandLineBuilder builder = new(args)
-  .AddTransient<ISerialNumberProvider, FileSystemSerialNumberProvider>()
-  .AddTransient<IntermediateCaGenerator>();
-
-MinimalCommandLineApp app = builder.Build();
-
-app.AddRootDescription("Create X509Certificates.");
-
-// generate a intermediateCA certificate
-app.MapCommand<IntermediateCaGenerator>("intermediateCA", 
-  // this parameter is a binder to map the command to the instance method containing the application logic
-  handler => handler.GenerateCaAsync,
-  cmdOptions => 
-  {
-    cmdOptions
-      .AddCommandDescription("Create a intermediate certificate authority.")
-      .AddArgument<string>("CommonName", argument =>
-        argument.AddHelpName("Common Name")
-          .AddDescription("Add a common name to the certificate's subject name.")
-      )
-      .AddArgument<string>("IssuerCertificate", argument =>
-        argument.AddHelpName("Issuer Certificate")
-          .AddDescription("Add an issuer certificate with its private key.")
-      )
-      .AddOption<string[]>("-ou", option =>
-        // truncated for brevity
-    });
-
-await app.StartAsync();
-
-
-public class IntermediateCaGenerator
-{
-  ISerialNumberProvider _serialNumberProvider;
-  public IntermediateCaGenerator(ISerialNumberProvider serialNumberProvider)
-  {
-    _serialNumberProvider = serialNumberProvider;
-  }
-
-  public async Task GenerateCaAsync(string commonName, string issuerFilePath)
-  {
-    var certificateSerialNumber = _serialNumberProvider.NextSerialNumber();
-    // Truncated for brevity
-  }
-}
-public class FileSystemSerialNumberProvider : IFileSystemSerialNumberProvider
-{
-  // Truncated for brevity
-}
-```
-
-
-
-
-
 
 ## Contributors - Getting Started
 
