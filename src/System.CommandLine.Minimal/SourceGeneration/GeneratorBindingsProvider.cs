@@ -39,7 +39,7 @@ internal static class GeneratorBindingsProvider
             string type = param.Type.ToDisplayString(NullableFlowState.None, SymbolDisplayFormat.FullyQualifiedFormat);
 
             AttributeData? fromServicesAttribute = attributes.FirstOrDefault(a => a.AttributeClass
-                ?.ToDisplayString() == "FromServices");
+                ?.ToDisplayString() == "System.CommandLine.Minimal.FromServicesAttribute");
             AttributeData? optionAttribute = attributes.FirstOrDefault(a => a.AttributeClass
                 ?.ToDisplayString() == "System.CommandLine.Minimal.OptionAttribute");
             AttributeData? argumentAttribute = attributes.FirstOrDefault(a => a.AttributeClass

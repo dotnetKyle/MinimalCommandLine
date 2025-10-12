@@ -13,7 +13,8 @@ public class RootCaGenerator
 {
     [Command("root")]
     public static async Task GenerateRootCaAsync(
-		string commonName,
+        [FromServices] ISerialNumberProvider serialNumberProvider,
+        string commonName,
 		string[]? OUs = null,
 		string? organization = null,
 		string? country = null,
