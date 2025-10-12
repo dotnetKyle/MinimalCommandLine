@@ -15,7 +15,6 @@ public class SSLCertificateGenerator
 
     [Command("ssl")]
     public async Task GenerateSslCertAsync(
-        [FromServices] ISerialNumberProvider serialNumberProvider,
         string commonName,
         string issuerFilePath2,
         [Option] string[] DNSNames,

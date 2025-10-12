@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace System.CommandLine.Minimal.SourceGeneration;
 
@@ -14,6 +16,7 @@ internal static class CommandOptionsWriter
             StringBuilder sb = new();
             sb.AppendLine(
                 """
+                using System;
                 using System.CommandLine;
                 using System.CommandLine.Invocation;
                 using System.CommandLine.Minimal.Bindings;
@@ -67,6 +70,8 @@ internal static class CommandOptionsWriter
                 StringBuilder linkCommandToSymbolsSb = new();
                 StringBuilder createParametersSb = new();
                 string[] parameterNames = new string[binder.Bindings.Value.Length];
+                // a count of parameter bindings that are arguments or options but not fromServices bindings.
+                int validCount = 0;
                 for (int i = 0; i < binder.Bindings.Value.Length; i++)
                 {
                     ParameterBinding param = binder.Bindings.Value[i];
@@ -79,7 +84,7 @@ internal static class CommandOptionsWriter
                         linkCommandToSymbolsSb.AppendLine(
                             $$"""
                                         this.Command.Arguments.Add(this.{{arg.NameTitleCase}}Argument);
-                                        bindings[{{i}}] = new ArgumentBinding(
+                                        bindings[{{validCount++}}] = new ArgumentBinding(
                                             ParameterName: "{{arg.OriginalParameterName}}",
                                             ParameterType: typeof({{arg.Type}}),
                                             Argument: this.{{arg.NameTitleCase}}Argument
@@ -97,7 +102,7 @@ internal static class CommandOptionsWriter
                         linkCommandToSymbolsSb.AppendLine(
                             $$"""
                                         this.Command.Options.Add(this.{{opt.NameTitleCase}}Option);
-                                        bindings[{{i}}] = new OptionBinding(
+                                        bindings[{{validCount++}}] = new OptionBinding(
                                             ParameterName: "{{opt.OriginalParameterName}}",
                                             ParameterType: typeof({{opt.Type}}),
                                             Option: this.{{opt.NameTitleCase}}Option
@@ -120,13 +125,13 @@ internal static class CommandOptionsWriter
                 // add property accessor for the actual command
                 sb.AppendLine($"        public override Command Command {{ get; }} = new Command(\"{binder.CommandNameTitleCase}\");");
                 sb.AppendLine();
-                // public Command, Argument, and Option properties
+                // *** public Command, Argument, and Option properties (see above additions to writePublicPropertiesSb)
                 sb.AppendLine(writePublicPropertiesSb.ToString());
                 sb.AppendLine();
                 sb.AppendLine("        public override ParameterBinding[] SetupCommandParameterBindings()");
                 sb.AppendLine("        {");
-                sb.AppendLine($"            ParameterBinding[] bindings = new ParameterBinding[{binder.Bindings.Value.Length}];");
-                // join all of the bindings together
+                sb.AppendLine($"            ParameterBinding[] bindings = new ParameterBinding[{validCount}];");
+                // *** The bindings array (see above additions to linkCommandToSymbolsSb)
                 sb.AppendLine(linkCommandToSymbolsSb.ToString());
                 sb.AppendLine("            return bindings;");
                 sb.AppendLine("        }");
@@ -151,34 +156,43 @@ internal static class CommandOptionsWriter
                         }
                         else
                         {
-                            // if instance method, qualify with 'svc'
-                            methodQualifier = "svc";
-                            // get service from dependency injections
-                            sb.AppendLine($"                var svc = services.GetRequiredService<{binder.ClassNamespace}.{binder.ClassName}>();");
+                            // if instance method, qualify with 'commandService'
+                            methodQualifier = "commandService";
+                            // get command service from dependency injections
+                            sb.AppendLine($"                var commandService = services.GetRequiredService<{binder.ClassNamespace}.{binder.ClassName}>();");
                         }
 
+                        // *** The parameter creation fro command (see above additions to createParametersSb)
                         sb.AppendLine(createParametersSb.ToString());
 
-                        string parameterList = string.Join(", ", parameterNames);
+                        string parameterList = string.Join(",\r\n", parameterNames.Select(str => "                    " + str));
                         if (binder.MethodReturnType == "void")
                         {
-                            sb.AppendLine($"                {methodQualifier}.{binder.MethodName}({parameterList});");
+                            sb.AppendLine($"                {methodQualifier}.{binder.MethodName}(");
+                            sb.AppendLine(parameterList);
+                            sb.AppendLine("                );");
                             sb.AppendLine("                return Task.FromResult(0);");
                         }
                         else if (binder.MethodReturnType == "int")
                         {
                             sb.AppendLine("                return Task.FromResult(");
-                            sb.AppendLine($"                    {methodQualifier}.{binder.MethodName}({parameterList})");
+                            sb.AppendLine($"                   {methodQualifier}.{binder.MethodName}(");
+                            sb.AppendLine(parameterList);
+                            sb.AppendLine("                    )");
                             sb.AppendLine("                );");
                         }
                         else if (binder.MethodReturnType.EndsWith("System.Threading.Tasks.Task"))
                         {
-                            sb.AppendLine($"                await {methodQualifier}.{binder.MethodName}({parameterList});");
+                            sb.AppendLine($"                await {methodQualifier}.{binder.MethodName}(");
+                            sb.AppendLine(parameterList);
+                            sb.AppendLine("                );");
                             sb.AppendLine("                return 0;");
                         }
                         else if (binder.MethodReturnType.EndsWith("System.Threading.Tasks.Task<int>"))
                         {
-                            sb.AppendLine($"                return await {methodQualifier}.{binder.MethodName}({parameterList});");
+                            sb.AppendLine($"                return await {methodQualifier}.{binder.MethodName}(");
+                            sb.AppendLine(parameterList);
+                            sb.AppendLine("                );");
                         }
                         // end return function
                         sb.AppendLine("            };");
