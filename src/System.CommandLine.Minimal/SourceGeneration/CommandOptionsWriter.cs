@@ -28,7 +28,6 @@ internal static class CommandOptionsWriter
                 """
             );
             sb.AppendLine();
-            #region namespace System.CommandLine.Minimal
 
             sb.AppendLine($"    // \"{binder.CommandName}\" command, handler: {binder.FullMethodName}");
             if(binder.CommandName is not null)
@@ -123,7 +122,7 @@ internal static class CommandOptionsWriter
                 sb.AppendLine($"    public sealed class " + binder.CommandOptionsName + " : CommandOptions");
                 sb.AppendLine("    {");
                 // add property accessor for the actual command
-                sb.AppendLine($"        public override Command Command {{ get; }} = new Command(\"{binder.CommandNameTitleCase}\");");
+                sb.AppendLine($"        public override Command Command {{ get; }} = new Command(\"{binder.CommandName}\");");
                 sb.AppendLine();
                 // *** public Command, Argument, and Option properties (see above additions to writePublicPropertiesSb)
                 sb.AppendLine(writePublicPropertiesSb.ToString());
@@ -210,7 +209,6 @@ internal static class CommandOptionsWriter
 
             }
 
-            #endregion
             // end namespace System.CommandLine.Minimal
             sb.AppendLine("}");
 
