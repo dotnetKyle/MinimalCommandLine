@@ -85,11 +85,11 @@ builder
 
         configure.IssuerFilePath2Argument.Description = "Add the file path to the Issuer CA.";
 
-        configure.DNSNamesOption.Description = "Add one or more DNS names.";
-        configure.DNSNamesOption.Aliases.Add("-dns");
+        configure.DnsNamesOption.Description = "Add one or more DNS names.";
+        configure.DnsNamesOption.Aliases.Add("-dns");
 
-        configure.IPAddressesOption.Description = "Add one or more IP Addresses.";
-        configure.IPAddressesOption.Aliases.Add("-ip");
+        configure.IpAddressesOption.Description = "Add one or more IP Addresses.";
+        configure.IpAddressesOption.Aliases.Add("-ip");
 
         configure.OUsOption.Description = "Add one or more OUs to the certificate's subject name.";
         configure.OUsOption.Aliases.Add("-ou");
@@ -100,13 +100,13 @@ builder
         configure.CountryOption.Description = "Add an Organization to the certificate's subject name.";
         configure.CountryOption.Aliases.Add("-c");
 
-        configure.Public_filePathOption.Description = "Override the default export path for the public certificate.";
-        configure.Public_filePathOption.Aliases.Add("-pub");
-        configure.Public_filePathOption.DefaultValueFactory = _ => Path.Combine(Environment.CurrentDirectory, "ssl-pub.pfx");
+        configure.Public_FilePathOption.Description = "Override the default export path for the public certificate.";
+        configure.Public_FilePathOption.Aliases.Add("-pub");
+        configure.Public_FilePathOption.DefaultValueFactory = _ => Path.Combine(Environment.CurrentDirectory, "ssl-pub.pfx");
 
-        configure.Private_filePathOption.Description = "Override the default export path for the private certificate.";
-        configure.Private_filePathOption.Aliases.Add("-prv");
-        configure.Private_filePathOption.DefaultValueFactory = _ => Path.Combine(Environment.CurrentDirectory, "ssl-prv.pfx");
+        configure.Private_FilePathOption.Description = "Override the default export path for the private certificate.";
+        configure.Private_FilePathOption.Aliases.Add("-prv");
+        configure.Private_FilePathOption.DefaultValueFactory = _ => Path.Combine(Environment.CurrentDirectory, "ssl-prv.pfx");
 
         configure.NotBeforeDateOption.Description = "Add a date that the certificate cannot be used before.";
         configure.NotBeforeDateOption.Aliases.Add("-nb");

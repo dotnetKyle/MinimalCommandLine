@@ -31,7 +31,9 @@ internal static class ParameterNameConversion
     /// <returns>A kebab case option name. e.g. <c>"--my-option-name"</c>.</returns>
     internal static string ToOptionName(string parameterName)
     {
-        string kebab = Regex.Replace(parameterName, "([a-z])([A-Z])", "$1-$2").ToLower();
+        string kebab = Regex.Replace(parameterName, "([a-z])([A-Z])", "$1-$2")
+            .Replace('_', '-')
+            .ToLower();
         return "--" + kebab;
     }
 }
