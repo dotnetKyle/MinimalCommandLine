@@ -17,13 +17,13 @@ public class SSLCertificateGenerator
     public async Task GenerateSslCertAsync(
         string commonName,
         string issuerFilePath2,
-        [Option] string[] DNSNames,
-        [Option] string[] IPAddresses,
+        [Option] string[] dnsNames,
+        [Option] string[] ipAddresses,
         [Option] string[] OUs,
         string? organization = null,
         string? country = null,
-        string? public_filePath = null,
-        string? private_filePath = null,
+        string? public_FilePath = null,
+        string? private_FilePath = null,
         DateOnly? notBeforeDate = null,
         DateOnly? notAfterDate = null,
         int rsaSizeInBits = 2048)
@@ -33,14 +33,14 @@ public class SSLCertificateGenerator
         if (notAfterDate is null)
             notAfterDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(5));
 
-        if (public_filePath is null)
+        if (public_FilePath is null)
         {
             var cd = Environment.CurrentDirectory;
-            public_filePath = Path.Combine(cd, "intermediate-ca.pub.pfx");
+            public_FilePath = Path.Combine(cd, "intermediate-ca.pub.pfx");
         }
         else
         {
-            var directory = Path.GetDirectoryName(public_filePath);
+            var directory = Path.GetDirectoryName(public_FilePath);
             if (!Directory.Exists(directory))
             {
                 Console.WriteLine($"Directory \"{directory}\" does not exist.");
@@ -48,14 +48,14 @@ public class SSLCertificateGenerator
             }
         }
 
-        if(private_filePath is null)
+        if(private_FilePath is null)
         {
             var cd = Environment.CurrentDirectory;
-            private_filePath = Path.Combine(cd, "intermediate-ca.prv.pfx");
+            private_FilePath = Path.Combine(cd, "intermediate-ca.prv.pfx");
         }
         else
         {
-            var directory = Path.GetDirectoryName(private_filePath);
+            var directory = Path.GetDirectoryName(private_FilePath);
             if (!Directory.Exists(directory))
             {
                 Console.WriteLine($"Directory \"{directory}\" does not exist.");
@@ -63,7 +63,7 @@ public class SSLCertificateGenerator
             }
         }
 
-        if (public_filePath == private_filePath)
+        if (public_FilePath == private_FilePath)
         {
             Console.WriteLine("Public certificate path and private certificate path cannot be the same");
             return;
@@ -105,9 +105,9 @@ public class SSLCertificateGenerator
             );
 
             var SAN = new SubjectAlternativeNameBuilder();
-            foreach (var dnsName in DNSNames)
+            foreach (var dnsName in dnsNames)
                 SAN.AddDnsName(dnsName);
-            foreach (var ipaddress in IPAddresses)
+            foreach (var ipaddress in ipAddresses)
             {
                 var parts = ipaddress.Split('.');
                 var bytes = new List<byte>();
@@ -138,12 +138,12 @@ public class SSLCertificateGenerator
                 var privatePfx = privateCert.Export(X509ContentType.Pfx);
                 var pfx = cert.Export(X509ContentType.Pfx);
 
-                var task1 = File.WriteAllBytesAsync(private_filePath, privatePfx);
-                var task2 = File.WriteAllBytesAsync(public_filePath, pfx);
+                var task1 = File.WriteAllBytesAsync(private_FilePath, privatePfx);
+                var task2 = File.WriteAllBytesAsync(public_FilePath, pfx);
                 await Task.WhenAll(task1, task2);
 
-                Console.WriteLine(private_filePath);
-                Console.WriteLine(public_filePath);
+                Console.WriteLine(private_FilePath);
+                Console.WriteLine(public_FilePath);
             }
         }
     }
