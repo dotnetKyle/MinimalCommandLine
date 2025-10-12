@@ -45,8 +45,8 @@ var app = builder.Build();
 await app.StartAsync();
 ```
 
-This will map the HelloWorld class's Execute function to a command called `hello` with a 
-string Argument called `Message`.
+This will map the HelloWorld class's `void Execute(..)` function to a command called `"hello"`, and it 
+will map the parameter `message` to a string Argument called `<Message>`.
 
 ## Installing MinimalCommandLine
 
@@ -82,8 +82,12 @@ public class MyCommand
 }
 ```
 
-This registers a command called `mycommand`, with an Argument called `MyArgument`, and an Option 
-called `--my-option`. It can be called like this:
+This registers the following:
+ * A command called `mycommand` to the handler `void Run(..)`.
+ * The parameter `myArgument` to an Argument called `<MyArgument>`.
+ * The optional parameter `myOption` to an Option called `--my-option`. 
+
+The command can be called like this:
 
 ```bash
 mycommand "Foo" --my-option "Bar"
