@@ -39,9 +39,8 @@ builder
 
         configure.RsaSizeInBitsOption.Aliases.Add("-rsa");
         configure.RsaSizeInBitsOption.Description = "Change the default RSA size (as measured in bits).";
-        configure.RsaSizeInBitsOption.DefaultValueFactory = _ => 2048;
     })
-    .MapIntermediateCommand(configure => 
+    .MapIntermediateCommand(configure =>
     {
         configure.Command.Description = "Create an intermediate CA certificate.";
 
@@ -75,9 +74,8 @@ builder
 
         configure.RsaSizeInBitsOption.Description = "Change the default RSA size (as measured in bits).";
         configure.RsaSizeInBitsOption.Aliases.Add("-rsa");
-        configure.RsaSizeInBitsOption.DefaultValueFactory = _ => 2048;
     })
-    .MapSslCommand(configure => 
+    .MapSslCommand(configure =>
     {
         configure.Command.Description = "Create an SSL certificate.";
 
@@ -117,9 +115,9 @@ builder
         configure.NotAfterDateOption.DefaultValueFactory = _ => DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1));
 
         configure.RsaSizeInBitsOption.Description = "Change the default RSA size (as measured in bits).";
-        configure.RsaSizeInBitsOption.Aliases.Add("-rsa"); 
-        configure.RsaSizeInBitsOption.DefaultValueFactory = _ => 2048;
-    });
+        configure.RsaSizeInBitsOption.Aliases.Add("-rsa");
+    })
+    ;
 
 builder.MapAllCommands();
 

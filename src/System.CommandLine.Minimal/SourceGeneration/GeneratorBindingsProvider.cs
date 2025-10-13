@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.CommandLine.Minimal.SourceGeneration.Conventions;
@@ -49,13 +50,21 @@ internal static class GeneratorBindingsProvider
             // by convention if it has a default value it is an option, devleoper can override this with an [Argument] attribute
 
             if (fromServicesAttribute is not null)
+            {
                 bindings.BindServiceDescriptor(name, type);
+            }
             else if(optionAttribute is not null)
-                bindings.BindOption(name, type);
+            {
+                bindings.BindOption(name, type, GetSymbolDefaultValue(ctx, param));
+            }
             else if(argumentAttribute is not null || !hasDefault)
-                bindings.BindArgument(name, type);
+            {
+                bindings.BindArgument(name, type, GetSymbolDefaultValue(ctx, param));
+            }
             else
-                bindings.BindOption(name, type);
+            {
+                bindings.BindOption(name, type, GetSymbolDefaultValue(ctx, param));
+            }
         }
 
         return new GeneratingCommandBinder(
@@ -68,25 +77,80 @@ internal static class GeneratorBindingsProvider
             Bindings: bindings.ToImmutableArray());
     }
 
-    private static void BindOption(this List<ParameterBinding> list, string name, string type)
+    private static void BindOption(this List<ParameterBinding> list, string name, string type, string? defaultValueCode)
     {
-        // TODO: convert name to kebab case
         // TODO: add aliases
-        // TODO: add default value to CLI
-        OptionBinding option = new(name, type);
+        OptionBinding option = new(name, type, defaultValueCode);
         list.Add(option);
     }
-    private static void BindArgument(this List<ParameterBinding> list, string name, string type)
+    private static void BindArgument(this List<ParameterBinding> list, string name, string type, string? defaultValueCode)
     {
-        // TODO: convert name to title case
         // TODO: add description attribute if applicable
-        ArgumentBinding argument = new(name, type);
+        ArgumentBinding argument = new(name, type, defaultValueCode);
         list.Add(argument);
     }
     private static void BindServiceDescriptor(this List<ParameterBinding> list, string name, string type)
     {
         FromServicesBinding fromServicesBinding = new(name, type);
         list.Add(fromServicesBinding);
+    }
+
+    private static string? GetSymbolDefaultValue(GeneratorAttributeSyntaxContext ctx, IParameterSymbol param)
+    {
+        static string FormatLiteral(object value)
+        {
+            return value switch
+            {
+                null => "null",
+                string s => $"\"{s}\"",
+                char c => $"'{c}'",
+                bool b => b ? "true" : "false",
+                Enum e => $"{e.GetType().FullName}.{e}",
+                _ => value.ToString()
+            };
+        }
+
+        if (param.HasExplicitDefaultValue && param.ExplicitDefaultValue is not null)
+        {
+            SyntaxReference? syntaxRef = param.DeclaringSyntaxReferences.FirstOrDefault();
+            if (syntaxRef?.GetSyntax() is ParameterSyntax paramSyntax && paramSyntax.Default is not null)
+            {
+                ExpressionSyntax? defaultExpr = paramSyntax.Default.Value;
+                SymbolInfo symbolInfo = ctx.SemanticModel.GetSymbolInfo(defaultExpr);
+                ISymbol? symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+
+                // if the symbol is a field (like a defined constant)
+                if(symbol is IFieldSymbol field && field.IsConst && field.HasConstantValue)
+                {
+                    if(field.Type.BaseType is not null && field.Type.BaseType.ToDisplayString() == "System.Enum")
+                    {
+                        // check if it's an enumeration
+                        IFieldSymbol enumValue = field.Type.GetMembers()
+                            .OfType<IFieldSymbol>()
+                            .FirstOrDefault(f => f.HasConstantValue && Equals(f.ConstantValue, field.ConstantValue));
+
+                        if(enumValue is not null)
+                        {
+                            return $"{field.Type.ToDisplayString()}.{enumValue.Name}";
+                        }
+
+                        return field.ToDisplayString();
+                    }
+
+                    return FormatLiteral(field.ConstantValue);
+                }
+
+                return symbol != null
+                    ? symbol.OriginalDefinition.ToDisplayString()
+                    : defaultExpr.ToString();
+            }
+
+            ParameterSyntax? defaultSyntax = param.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() as ParameterSyntax;
+
+            return FormatLiteral(param.ExplicitDefaultValue);
+        }
+
+        return null;
     }
 }
 
@@ -107,7 +171,7 @@ internal record GeneratingCommandBinder(
     public string FullMethodName => $"{this.FullClassName}.{this.MethodName}";
 }
 
-internal abstract record ParameterBinding(string OriginalParameterName, string Type)
+internal abstract record ParameterBinding(string OriginalParameterName, string Type, string? DefaultValueConstant)
 {
     public string NameTitleCase
     {
@@ -126,8 +190,8 @@ internal abstract record ParameterBinding(string OriginalParameterName, string T
         }
     }
 }
-internal record ArgumentBinding(string OriginalParameterName, string Type)
-    : ParameterBinding(OriginalParameterName, Type)
+internal record ArgumentBinding(string OriginalParameterName, string Type, string? DefaultValueConstant)
+    : ParameterBinding(OriginalParameterName, Type, DefaultValueConstant)
 {
     /// <summary>
     /// The Argument name in title case, e.g. "myParameterName" becomes "My Parameter Name"
@@ -135,8 +199,8 @@ internal record ArgumentBinding(string OriginalParameterName, string Type)
     public string ConventionalArgumentName 
         => Conventions.ParameterNameConversion.ToArgumentName(this.OriginalParameterName);
 }
-internal record OptionBinding(string OriginalParameterName, string Type)
-    : ParameterBinding(OriginalParameterName, Type)
+internal record OptionBinding(string OriginalParameterName, string Type, string? DefaultValueConstant)
+    : ParameterBinding(OriginalParameterName, Type, DefaultValueConstant)
 {
     /// <summary>
     /// The option name in kebab case, e.g. "myParameterName" becomes "--my-parameter-name"
@@ -145,7 +209,6 @@ internal record OptionBinding(string OriginalParameterName, string Type)
         => Conventions.ParameterNameConversion.ToOptionName(this.OriginalParameterName);
 }
 internal record FromServicesBinding(string OriginalParameterName, string Type)
-    : ParameterBinding(OriginalParameterName, Type)
-{
-
+    : ParameterBinding(OriginalParameterName, Type, DefaultValueConstant:null)
+{ 
 }

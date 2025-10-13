@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.CommandLine.Minimal;
-using System.Linq;
+﻿using System.CommandLine.Minimal;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DemoApp.Services;
 
@@ -16,8 +11,8 @@ public class RootCaGenerator
         [FromServices] ISerialNumberProvider serialNumberProvider,
         string commonName,
 		string[]? OUs = null,
-		string? organization = null,
-		string? country = null,
+		string? organization = "My Organization LLC",
+		string? country = "US",
 		string? filePath = null,
         DateOnly? notBeforeDate = null,
         DateOnly? notAfterDate = null,
