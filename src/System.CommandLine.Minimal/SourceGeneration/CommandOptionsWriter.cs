@@ -78,7 +78,9 @@ internal static class CommandOptionsWriter
                     if(param is ArgumentBinding arg)
                     {
                         // public property for Argument
-                        writePublicPropertiesSb.AppendLine($"        public Argument<{arg.Type}> {arg.NameTitleCase}Argument {{ get; }} = new Argument<{arg.Type}>(\"{arg.HelpName}\");");
+                        writePublicPropertiesSb.Append($"        public Argument<{arg.Type}> {arg.NameTitleCase}Argument {{ get; }} = new Argument<{arg.Type}>(\"{arg.HelpName}\")");
+                        WriteDefaultValueFactory(writePublicPropertiesSb, arg);
+
                         // link together the Command and the Arguments
                         linkCommandToSymbolsSb.AppendLine(
                             $$"""
@@ -88,6 +90,7 @@ internal static class CommandOptionsWriter
                                             ParameterType: typeof({{arg.Type}}),
                                             Argument: this.{{arg.NameTitleCase}}Argument
                                         );
+
                             """
                         );
                         // instantiate argument parameter
@@ -95,8 +98,10 @@ internal static class CommandOptionsWriter
                     }
                     else if(param is OptionBinding opt)
                     {
-                        // public property
-                        writePublicPropertiesSb.AppendLine($"        public Option<{opt.Type}> {opt.NameTitleCase}Option {{ get; }} = new Option<{opt.Type}>(\"{opt.OptionName}\");");
+                        // public property for option
+                        writePublicPropertiesSb.Append($"        public Option<{opt.Type}> {opt.NameTitleCase}Option {{ get; }} = new Option<{opt.Type}>(\"{opt.OptionName}\")");
+                        WriteDefaultValueFactory(writePublicPropertiesSb, opt);
+
                         // link together the Command and the Options
                         linkCommandToSymbolsSb.AppendLine(
                             $$"""
@@ -106,6 +111,7 @@ internal static class CommandOptionsWriter
                                             ParameterType: typeof({{opt.Type}}),
                                             Option: this.{{opt.NameTitleCase}}Option
                                         );
+
                             """
                         );
                         // instantiate options parameter
@@ -129,7 +135,7 @@ internal static class CommandOptionsWriter
                 sb.AppendLine();
                 sb.AppendLine("        public override ParameterBinding[] SetupCommandParameterBindings()");
                 sb.AppendLine("        {");
-                sb.AppendLine($"            ParameterBinding[] bindings = new ParameterBinding[{validCount}];");
+                sb.AppendLine($"            ParameterBinding[] bindings = new ParameterBinding[{validCount}];\r\n");
                 // *** The bindings array (see above additions to linkCommandToSymbolsSb)
                 sb.AppendLine(linkCommandToSymbolsSb.ToString());
                 sb.AppendLine("            return bindings;");
@@ -218,5 +224,14 @@ internal static class CommandOptionsWriter
         {
             return null;
         }
+    }
+
+    private static void WriteDefaultValueFactory(StringBuilder sb, ParameterBinding param)
+    {
+        // If there is a default value, add it to the CLI so it can be included in the docs
+        if (param.DefaultValueConstant is not null)
+            sb.AppendLine($"{{ DefaultValueFactory = _ => {param.DefaultValueConstant} }};");
+        else
+            sb.AppendLine(";");
     }
 }
