@@ -51,18 +51,18 @@ internal static class GeneratorBindingsProvider
             // check for attributes first, then try to bind anyways
             // by convention if it has a default value it is an option, developer can override this with an [Argument] attribute
             BindingType bindingType = DetermineBindingType(fromServicesAttribute, optionAttribute, argumentAttribute, param);
-            
+
             if (bindingType == BindingType.DependencyInjection)
             {
                 bindings.BindServiceDescriptor(name, type);
             }
             else if(bindingType == BindingType.Option)
             {
-                bindings.BindOption(name, type, GetSymbolDefaultValue(ctx, param));
+                bindings.BindOption(name, type, GetSymbolDefaultValue(ctx, param), IsParamCollectionType(param));
             }
             else if (bindingType == BindingType.Argument)
             {
-                bindings.BindArgument(name, type, GetSymbolDefaultValue(ctx, param));
+                bindings.BindArgument(name, type, GetSymbolDefaultValue(ctx, param), IsParamCollectionType(param));
             }
         }
 
@@ -102,16 +102,51 @@ internal static class GeneratorBindingsProvider
         // by convention, bind regular required parameters to Arguments
         return BindingType.Argument;
     }
-    private static void BindOption(this List<ParameterBinding> list, string name, string type, string? defaultValueCode)
+
+    private static bool IsParamCollectionType(IParameterSymbol param)
+    {
+        // specifically exclude strings from this list
+        if (param.Type.SpecialType == SpecialType.System_String)
+            return false;
+
+        if (param.Type.Kind == SymbolKind.ArrayType)
+            return true;
+
+        if (param.Type is INamedTypeSymbol namedType)
+        {
+            string typeName = namedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
+            foreach(INamedTypeSymbol @interface in namedType.AllInterfaces)
+            {
+                // Check if it's a constructed generic type like List<T>, IEnumerable<T>, etc.
+                var constructedFrom = namedType.ConstructedFrom.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
+                if (constructedFrom is
+                    "global::System.Collections.Generic.IEnumerable<T>" or
+                    "global::System.Collections.Generic.IList<T>" or
+                    "global::System.Collections.Generic.ICollection<T>" or
+                    "global::System.Collections.Generic.IReadOnlyList<T>" or
+                    "global::System.Collections.Generic.IReadOnlyCollection<T>" or
+                    "global::System.Collections.Generic.List<T>")
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static void BindOption(this List<ParameterBinding> list, string name, string type, string? defaultValueCode, bool isCollectionType)
     {
         // TODO: add aliases
-        OptionBinding option = new(name, type, defaultValueCode);
+        OptionBinding option = new(name, type, defaultValueCode, isCollectionType);
         list.Add(option);
     }
-    private static void BindArgument(this List<ParameterBinding> list, string name, string type, string? defaultValueCode)
+    private static void BindArgument(this List<ParameterBinding> list, string name, string type, string? defaultValueCode, bool isCollectionType)
     {
         // TODO: add description attribute if applicable
-        ArgumentBinding argument = new(name, type, defaultValueCode);
+        ArgumentBinding argument = new(name, type, defaultValueCode, isCollectionType);
         list.Add(argument);
     }
     private static void BindServiceDescriptor(this List<ParameterBinding> list, string name, string type)
@@ -196,7 +231,7 @@ internal record GeneratingCommandBinder(
     public string FullMethodName => $"{this.FullClassName}.{this.MethodName}";
 }
 
-internal abstract record ParameterBinding(string OriginalParameterName, string Type, string? DefaultValueConstant)
+internal abstract record ParameterBinding(string OriginalParameterName, string Type, string? DefaultValueConstant, bool IsCollectionType)
 {
     public string NameTitleCase
     {
@@ -215,25 +250,24 @@ internal abstract record ParameterBinding(string OriginalParameterName, string T
         }
     }
 }
-internal record ArgumentBinding(string OriginalParameterName, string Type, string? DefaultValueConstant)
-    : ParameterBinding(OriginalParameterName, Type, DefaultValueConstant)
+internal record ArgumentBinding(string OriginalParameterName, string Type, string? DefaultValueConstant, bool IsCollectionType)
+    : ParameterBinding(OriginalParameterName, Type, DefaultValueConstant, IsCollectionType)
 {
     /// <summary>
     /// The Argument name in title case, e.g. "myParameterName" becomes "My Parameter Name"
     /// </summary>
     public string ConventionalArgumentName 
-        => Conventions.ParameterNameConversion.ToArgumentName(this.OriginalParameterName);
+        => ParameterNameConversion.ToArgumentName(this.OriginalParameterName);
 }
-internal record OptionBinding(string OriginalParameterName, string Type, string? DefaultValueConstant)
-    : ParameterBinding(OriginalParameterName, Type, DefaultValueConstant)
+internal record OptionBinding(string OriginalParameterName, string Type, string? DefaultValueConstant, bool IsCollectionType)
+    : ParameterBinding(OriginalParameterName, Type, DefaultValueConstant, IsCollectionType)
 {
     /// <summary>
     /// The option name in kebab case, e.g. "myParameterName" becomes "--my-parameter-name"
     /// </summary>
-    public string OptionName 
-        => Conventions.ParameterNameConversion.ToOptionName(this.OriginalParameterName);
+    public string OptionName => ParameterNameConversion.ToOptionName(this.OriginalParameterName);
 }
 internal record FromServicesBinding(string OriginalParameterName, string Type)
-    : ParameterBinding(OriginalParameterName, Type, DefaultValueConstant:null)
+    : ParameterBinding(OriginalParameterName, Type, DefaultValueConstant:null, IsCollectionType:false)
 { 
 }
