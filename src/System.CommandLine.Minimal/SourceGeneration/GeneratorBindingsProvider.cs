@@ -8,6 +8,8 @@ using System.Threading;
 
 namespace System.CommandLine.Minimal.SourceGeneration;
 
+internal enum BindingType { Argument, Option, DependencyInjection }
+
 internal static class GeneratorBindingsProvider
 {
     /// <summary>
@@ -35,7 +37,7 @@ internal static class GeneratorBindingsProvider
         foreach(IParameterSymbol param in parameters)
         {
             ImmutableArray<AttributeData> attributes = param.GetAttributes();
-            bool hasDefault = param.HasExplicitDefaultValue;
+
             string name = param.Name;
             string type = param.Type.ToDisplayString(NullableFlowState.None, SymbolDisplayFormat.FullyQualifiedFormat);
 
@@ -47,23 +49,20 @@ internal static class GeneratorBindingsProvider
                 ?.ToDisplayString() == "System.CommandLine.Minimal.ArgumentAttribute");
 
             // check for attributes first, then try to bind anyways
-            // by convention if it has a default value it is an option, devleoper can override this with an [Argument] attribute
-
-            if (fromServicesAttribute is not null)
+            // by convention if it has a default value it is an option, developer can override this with an [Argument] attribute
+            BindingType bindingType = DetermineBindingType(fromServicesAttribute, optionAttribute, argumentAttribute, param);
+            
+            if (bindingType == BindingType.DependencyInjection)
             {
                 bindings.BindServiceDescriptor(name, type);
             }
-            else if(optionAttribute is not null)
+            else if(bindingType == BindingType.Option)
             {
                 bindings.BindOption(name, type, GetSymbolDefaultValue(ctx, param));
             }
-            else if(argumentAttribute is not null || !hasDefault)
+            else if (bindingType == BindingType.Argument)
             {
                 bindings.BindArgument(name, type, GetSymbolDefaultValue(ctx, param));
-            }
-            else
-            {
-                bindings.BindOption(name, type, GetSymbolDefaultValue(ctx, param));
             }
         }
 
@@ -77,6 +76,32 @@ internal static class GeneratorBindingsProvider
             Bindings: bindings.ToImmutableArray());
     }
 
+    private static BindingType DetermineBindingType(
+        AttributeData? fromServicesAttribute,
+        AttributeData? optionAttribute,
+        AttributeData? argumentAttribute,
+        IParameterSymbol param)
+    {
+        if (fromServicesAttribute is not null)
+            return BindingType.DependencyInjection;
+        
+        if (optionAttribute is not null)
+            return BindingType.Option;
+        
+        if (argumentAttribute is not null)
+            return BindingType.Argument;
+        
+        // by convention, bind arrays to Options
+        if (param.Type.Kind == SymbolKind.ArrayType)
+            return BindingType.Option;
+        
+        // by convention, bind parameters with default values to Options
+        if (param.HasExplicitDefaultValue)
+            return BindingType.Option;
+        
+        // by convention, bind regular required parameters to Arguments
+        return BindingType.Argument;
+    }
     private static void BindOption(this List<ParameterBinding> list, string name, string type, string? defaultValueCode)
     {
         // TODO: add aliases

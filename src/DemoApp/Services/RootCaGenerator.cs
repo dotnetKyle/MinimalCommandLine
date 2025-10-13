@@ -10,7 +10,7 @@ public class RootCaGenerator
     public static async Task GenerateRootCaAsync(
         [FromServices] ISerialNumberProvider serialNumberProvider,
         string commonName,
-		string[]? OUs = null,
+		string[] OUs,
 		string? organization = "My Organization LLC",
 		string? country = "US",
 		string? filePath = null,

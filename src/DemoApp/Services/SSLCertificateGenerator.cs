@@ -17,9 +17,9 @@ public class SSLCertificateGenerator
     public async Task GenerateSslCertAsync(
         string commonName,
         string issuerFilePath2,
-        [Option] string[] dnsNames,
-        [Option] string[] ipAddresses,
-        [Option] string[] OUs,
+        string[] dnsNames,
+        string[] ipAddresses,
+        string[] OUs,
         string? organization = null,
         string? country = null,
         string? public_FilePath = null,
