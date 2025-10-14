@@ -8,11 +8,13 @@
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 		<CompilerGeneratedFilesOutputPath>obj\Generated</CompilerGeneratedFilesOutputPath>
 	</PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\System.CommandLine.Minimal\System.CommandLine.Minimal.csproj"
-                      OutputItemType="Analyzer"
-                      ReferenceOutputAssembly="true" />
-  </ItemGroup>
+	
+	<ItemGroup>
+		<ProjectReference Include="..\System.CommandLine.Minimal\System.CommandLine.Minimal.csproj" />
+		<ProjectReference Include="..\System.CommandLine.Minimal.SourceGenerator\System.CommandLine.Minimal.SourceGenerator.csproj">
+			<OutputItemType>Analyzer</OutputItemType>
+			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+		</ProjectReference>
+	</ItemGroup>
 
 </Project>

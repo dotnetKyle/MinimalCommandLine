@@ -7,18 +7,13 @@
 		<PackageId>MinimalCommandLine</PackageId>
 		<Title>Minimal Command Line</Title>
 		<Authors>dotnetKyle</Authors>
-		<Description>A set of minimal builders that sits on top of the System.CommandLine namespace to give an experience similar to the ASP.Net Core minimal API builders.</Description>
+		<Description>A source generator on top of System.CommandLine to minimize the boiler plate needed to get started. Just add a [Command] attribute to a function to get started!</Description>
 		<PackageProjectUrl></PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/dotnetKyle/MinimalCommandLine</RepositoryUrl>
-		<PackageTags>Command; Line</PackageTags>
-		<PackageReleaseNotes>Added missing support for the Root Command.</PackageReleaseNotes>
+		<PackageTags>Command; Line; System.CommandLine; Minimal; Source Generator; Minimal CLI; CLI</PackageTags>
+		<PackageReleaseNotes>Added a source generator to quickly rig up commands with minimal effort.</PackageReleaseNotes>
 		<DebugType>embedded</DebugType>
-		
-		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-		<CompilerGeneratedFilesOutputPath>obj\Generated</CompilerGeneratedFilesOutputPath>
-		<IsRoslynComponent>true</IsRoslynComponent>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -29,12 +24,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
-		<PackageReference Include="System.CommandLine" Version="2.0.0-rc.1.25451.107" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all">
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
+		<ProjectReference Include="..\System.CommandLine.Minimal.Core\System.CommandLine.Minimal.Core.csproj" />
+		<ProjectReference Include="..\System.CommandLine.Minimal.SourceGenerator\System.CommandLine.Minimal.SourceGenerator.csproj">
+			<PrivateAssets>all</PrivateAssets>
+			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+			<OutputItemType>Analyzer</OutputItemType>
+		</ProjectReference>
 	</ItemGroup>
 
 </Project>
