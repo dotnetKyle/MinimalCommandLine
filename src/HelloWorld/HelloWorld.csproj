@@ -7,14 +7,15 @@
     <Nullable>enable</Nullable>
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 		<CompilerGeneratedFilesOutputPath>obj\Generated</CompilerGeneratedFilesOutputPath>
+		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 	
 	<ItemGroup>
-		<ProjectReference Include="..\System.CommandLine.Minimal\System.CommandLine.Minimal.csproj" />
+		<!--<ProjectReference Include="..\System.CommandLine.Minimal\System.CommandLine.Minimal.csproj" />
 		<ProjectReference Include="..\System.CommandLine.Minimal.SourceGenerator\System.CommandLine.Minimal.SourceGenerator.csproj">
 			<OutputItemType>Analyzer</OutputItemType>
 			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-		</ProjectReference>
+		</ProjectReference>-->
 	</ItemGroup>
 
 </Project>
