@@ -14,6 +14,8 @@
 		<PackageTags>Command; Line; System.CommandLine; Minimal; Source Generator; Minimal CLI; CLI</PackageTags>
 		<PackageReleaseNotes>Added a source generator to quickly rig up commands with minimal effort.</PackageReleaseNotes>
 		<DebugType>embedded</DebugType>
+		<!--<IsRoslynComponent>true</IsRoslynComponent>-->
+		<!--<IncludeBuildOutput>false</IncludeBuildOutput>-->
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -27,9 +29,16 @@
 		<ProjectReference Include="..\System.CommandLine.Minimal.Core\System.CommandLine.Minimal.Core.csproj" />
 		<ProjectReference Include="..\System.CommandLine.Minimal.SourceGenerator\System.CommandLine.Minimal.SourceGenerator.csproj">
 			<PrivateAssets>all</PrivateAssets>
-			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
 			<OutputItemType>Analyzer</OutputItemType>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</ProjectReference>
 	</ItemGroup>
 
+	<!--<ItemGroup>
+		<None Include="..\System.CommandLine.Minimal.Core\bin\$(Configuration)\netstandard2.0\System.CommandLine.Minimal.Core.dll" Pack="true" PackagePath="lib/netstandard2.0/" />	
+	</ItemGroup>-->
+	
+	<ItemGroup>
+		<None Include="..\System.CommandLine.Minimal.SourceGenerator\bin\$(Configuration)\netstandard2.0\System.CommandLine.Minimal.SourceGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs/" />
+	</ItemGroup>
 </Project>

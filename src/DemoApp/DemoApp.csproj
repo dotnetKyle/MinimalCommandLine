@@ -11,11 +11,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="MinimalCommandLine" Version="0.5.1-alpha" />
+	</ItemGroup>
+
+	<!--<ItemGroup>
 		<ProjectReference Include="..\System.CommandLine.Minimal\System.CommandLine.Minimal.csproj" />
 		<ProjectReference Include="..\System.CommandLine.Minimal.SourceGenerator\System.CommandLine.Minimal.SourceGenerator.csproj">
 			<OutputItemType>Analyzer</OutputItemType>
 			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
 		</ProjectReference>
-	</ItemGroup>
+	</ItemGroup>-->
 
 </Project>

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>MinimalCommandLine</id>
+    <version>$(Version)</version>
+    <authors>dotnetKyle</authors>
+    <description>A source generator on top of System.CommandLine to minimize the boiler plate needed to get started. Just add a [Command] attribute to a function to get started!</description>
+    <dependencies>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Microsoft.Extensions.Hosting" version="8.0.1" />
+        <dependency id="System.CommandLine" version="2.0.0-rc.1.25451.107" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <!-- Runtime library -->
+    <file src="bin\Release\netstandard2.0\System.CommandLine.Minimal.Core.dll" target="lib\netstandard2.0\" />
+
+    <!-- Source generator -->
+    <file src="bin\Release\netstandard2.0\System.CommandLine.Minimal.SourceGenerator.dll" target="analyzers\dotnet\cs\" />
+  </files>
+</package>
