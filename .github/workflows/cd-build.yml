@@ -25,15 +25,15 @@ jobs:
       
       # packs all nuget packages at once 
     - name: Pack MinimalCommandLine Nuget Alpha
-      run: .\nuget.exe pack src\System.CommandLine.Minimal\MinimalCommandLine.nuspec -Version 0.5.0.${{github.run_number}}-alpha -Properties Configuration=Release
+      run: .\nuget.exe pack src\System.CommandLine.Minimal\MinimalCommandLine.nuspec -Version 0.5.0.${{github.run_number}}-alpha -OutputDirectory packages -Properties Configuration=Release
     - name: Pack MinimalCommandLine Nuget
-      run: .\nuget.exe pack src\System.CommandLine.Minimal\MinimalCommandLine.nuspec -Version 0.5.0.${{github.run_number}} -Properties Configuration=Release
+      run: .\nuget.exe pack src\System.CommandLine.Minimal\MinimalCommandLine.nuspec -Version 0.5.0.${{github.run_number}} -OutputDirectory packages -Properties Configuration=Release
 
     - name: Publish MinimalCommandLine Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: Nugets
-        path: src\**\bin\**\*.nupkg
+        path: packages\*.nupkg
         
   integration:
     needs: build
@@ -51,7 +51,7 @@ jobs:
     - name: Display structure of downloaded files
       run: ls -R
     - name: Push MinimalCommandLine Nuget
-      run: dotnet nuget push ./System.CommandLine.Minimal/bin/Release/MinimalCommandLine.0.5.0.${{github.run_number}}-alpha.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push ./packages/MinimalCommandLine.0.5.0.${{github.run_number}}-alpha.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
 
   production:
     needs: integration
@@ -66,4 +66,4 @@ jobs:
         name: Nugets
         
     - name: Push MinimalCommandLine Nuget
-      run: dotnet nuget push ./System.CommandLine.Minimal/bin/Release/MinimalCommandLine.0.5.0.${{github.run_number}}.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push ./packages/MinimalCommandLine.0.5.0.${{github.run_number}}.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
