@@ -1,5 +1,7 @@
 name: CD-Build
 
+# Note: this is a mixture of windows build and linux deployments
+
 on:
   push:
     # Runs on all branches so they share a github.run_number increment
@@ -7,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
     - name: Setup .NET
@@ -16,22 +18,22 @@ jobs:
         dotnet-version: 8.0.x
         
     - name: Restore dependencies
-      run: dotnet restore src/System.CommandLine.Minimal/System.CommandLine.Minimal.csproj
+      run: dotnet restore src\System.CommandLine.Minimal\System.CommandLine.Minimal.csproj
       
     - name: Build Minimal CommandLine
-      run: dotnet build src/System.CommandLine.Minimal/System.CommandLine.Minimal.csproj -c Release --no-restore
+      run: dotnet build src\System.CommandLine.Minimal\System.CommandLine.Minimal.csproj -c Release --no-restore
       
       # packs all nuget packages at once 
     - name: Pack MinimalCommandLine Nuget Alpha
-      run: dotnet pack src/System.CommandLine.Minimal.sln -c Release --no-build -p:PackageVersion=0.5.0.${{github.run_number}}-alpha
+      run: .\nuget.exe pack src\System.CommandLine.Minimal\MinimalCommandLine.nuspec -Version 0.5.0.${{github.run_number}}-alpha -Properties Configuration=Release
     - name: Pack MinimalCommandLine Nuget
-      run: dotnet pack src/System.CommandLine.Minimal.sln -c Release --no-build -p:PackageVersion=0.5.0.${{github.run_number}}
-      
+      run: .\nuget.exe pack src\System.CommandLine.Minimal\MinimalCommandLine.nuspec -Version 0.5.0.${{github.run_number}} -Properties Configuration=Release
+
     - name: Publish MinimalCommandLine Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: Nugets
-        path: src/**/bin/**/*.nupkg
+        path: src\**\bin\**\*.nupkg
         
   integration:
     needs: build
@@ -48,10 +50,6 @@ jobs:
       
     - name: Display structure of downloaded files
       run: ls -R
-    - name: Push MinimalCommandLine.Core Nuget
-      run: dotnet nuget push ./System.CommandLine.Minimal.Core/bin/Release/MinimalCommandLine.Core.0.5.0.${{github.run_number}}-alpha.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
-    - name: Push MinimalCommandLine.SourceGenerator Nuget
-      run: dotnet nuget push ./System.CommandLine.Minimal.SourceGenerator/bin/Release/MinimalCommandLine.SourceGenerator.0.5.0.${{github.run_number}}-alpha.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
     - name: Push MinimalCommandLine Nuget
       run: dotnet nuget push ./System.CommandLine.Minimal/bin/Release/MinimalCommandLine.0.5.0.${{github.run_number}}-alpha.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
 
@@ -67,9 +65,5 @@ jobs:
       with:
         name: Nugets
         
-    - name: Push MinimalCommandLine.Core Nuget
-      run: dotnet nuget push ./System.CommandLine.Minimal.Core/bin/Release/MinimalCommandLine.Core.0.5.0.${{github.run_number}}.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
-    - name: Push MinimalCommandLine.SourceGenerator Nuget
-      run: dotnet nuget push ./System.CommandLine.Minimal.SourceGenerator/bin/Release/MinimalCommandLine.SourceGenerator.0.5.0.${{github.run_number}}.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
     - name: Push MinimalCommandLine Nuget
       run: dotnet nuget push ./System.CommandLine.Minimal/bin/Release/MinimalCommandLine.0.5.0.${{github.run_number}}.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
