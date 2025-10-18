@@ -1,0 +1,5 @@
+﻿<Project>
+  <ItemGroup>
+    <Analyzer Include="$(MSBuildThisFileDirectory)System.CommandLine.Minimal.SourceGenerator.dll" />
+  </ItemGroup>
+</Project>
