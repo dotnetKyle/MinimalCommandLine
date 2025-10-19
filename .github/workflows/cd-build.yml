@@ -51,7 +51,7 @@ jobs:
     - name: Display structure of downloaded files
       run: ls -R
     - name: Push MinimalCommandLine Nuget
-      run: dotnet nuget push ./packages/MinimalCommandLine.0.5.0.${{github.run_number}}-alpha.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push ./MinimalCommandLine.0.5.0.${{github.run_number}}-alpha.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
 
   production:
     needs: integration
@@ -66,4 +66,4 @@ jobs:
         name: Nugets
         
     - name: Push MinimalCommandLine Nuget
-      run: dotnet nuget push ./packages/MinimalCommandLine.0.5.0.${{github.run_number}}.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push ./MinimalCommandLine.0.5.0.${{github.run_number}}.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
