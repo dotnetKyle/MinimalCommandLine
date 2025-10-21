@@ -14,8 +14,7 @@
 		<PackageTags>Command; Line; System.CommandLine; Minimal; Source Generator; Minimal CLI; CLI</PackageTags>
 		<PackageReleaseNotes>Added a source generator to quickly rig up commands with minimal effort.</PackageReleaseNotes>
 		<DebugType>embedded</DebugType>
-		<!--<IsRoslynComponent>true</IsRoslynComponent>-->
-		<!--<IncludeBuildOutput>false</IncludeBuildOutput>-->
+		<IncludeBuildOutput>false</IncludeBuildOutput>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -26,19 +25,20 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\System.CommandLine.Minimal.Core\System.CommandLine.Minimal.Core.csproj" />
-		<ProjectReference Include="..\System.CommandLine.Minimal.SourceGenerator\System.CommandLine.Minimal.SourceGenerator.csproj">
-			<PrivateAssets>all</PrivateAssets>
-			<OutputItemType>Analyzer</OutputItemType>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-		</ProjectReference>
-	</ItemGroup>
+		<!-- Runtime library -->
+		<Content Include="..\System.CommandLine.Minimal.Core\bin\$(Configuration)\netstandard2.0\System.CommandLine.Minimal.Core.dll"
+             Pack="true"
+             PackagePath="lib/netstandard2.0/" />
 
-	<!--<ItemGroup>
-		<None Include="..\System.CommandLine.Minimal.Core\bin\$(Configuration)\netstandard2.0\System.CommandLine.Minimal.Core.dll" Pack="true" PackagePath="lib/netstandard2.0/" />	
-	</ItemGroup>-->
+		<!-- Source generator library -->
+		<Content Include="..\System.CommandLine.Minimal.SourceGenerator\bin\$(Configuration)\netstandard2.0\System.CommandLine.Minimal.SourceGenerator.dll"
+             Pack="true"
+             PackagePath="analyzers/dotnet/cs/" />
+	</ItemGroup>
 	
 	<ItemGroup>
-		<None Include="..\System.CommandLine.Minimal.SourceGenerator\bin\$(Configuration)\netstandard2.0\System.CommandLine.Minimal.SourceGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs/" />
+		<!-- Runtime library nuget dependencies -->
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+		<PackageReference Include="System.CommandLine" Version="2.0.0-rc.1.25451.107" />
 	</ItemGroup>
 </Project>
