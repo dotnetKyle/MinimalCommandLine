@@ -19,7 +19,7 @@ jobs:
       run: dotnet restore src/System.CommandLine.Minimal.sln
       
     - name: Build Minimal CommandLine
-      run: dotnet build src/System.CommandLine.Minimal/System.CommandLine.Minimal.csproj -c Release --no-restore
+      run: dotnet build src/System.CommandLine.Minimal.sln -c Release --no-restore
       
     - name: Build HelloWorld Demo
       run: dotnet build src/HelloWorld/HelloWorld.csproj -c Release --no-restore
