@@ -18,10 +18,10 @@ jobs:
         dotnet-version: 8.0.x
         
     - name: Restore dependencies
-      run: dotnet restore src/System.CommandLine.Minimal/System.CommandLine.Minimal.csproj
-      
+      run: dotnet restore src/System.CommandLine.Minimal.sln
+      # build solution here instead of project
     - name: Build Minimal CommandLine
-      run: dotnet build src/System.CommandLine.Minimal/System.CommandLine.Minimal.csproj -c Release --no-restore
+      run: dotnet build src/System.CommandLine.Minimal.sln -c Release --no-restore
       
       # packs all nuget packages at once 
     - name: Pack MinimalCommandLine Nuget Alpha
