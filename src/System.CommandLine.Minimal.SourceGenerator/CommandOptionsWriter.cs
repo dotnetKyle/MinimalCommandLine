@@ -164,7 +164,7 @@ internal static class CommandOptionsWriter
                             // if instance method, qualify with 'commandService'
                             methodQualifier = "commandService";
                             // get command service from dependency injections
-                            sb.AppendLine($"                var commandService = services.GetRequiredService<{binder.ClassNamespace}.{binder.ClassName}>();");
+                            sb.AppendLine($"                var commandService = services.GetRequiredService<{binder.FullClassName}>();");
                         }
 
                         // *** The parameter creation fro command (see above additions to createParametersSb)

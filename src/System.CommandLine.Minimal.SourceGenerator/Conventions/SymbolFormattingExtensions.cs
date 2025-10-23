@@ -1,10 +1,17 @@
 ﻿using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace System.CommandLine.Minimal.SourceGeneration.Conventions;
 
 internal static class SymbolFormattingExtensions
 {
+    static readonly char[] unallowedChars = [ 
+        '!', '@', '#', '$', '%', '^', '&', '*', '(', ')',
+        '-', '+', '=', '{', '}', '[', ']', '|', '\\', ':', ';',
+        '\'', '"', '<', '>', ',', '.', '?', '/', '~', '`',
+        ' ', '\t', '\n', '\r' ];
+
     /// <summary>
     /// Conventionally convert a parameter name from a function into an help name using title case with spaces.
     /// </summary>
@@ -25,7 +32,32 @@ internal static class SymbolFormattingExtensions
     /// <returns></returns>
     public static string ToSymbolName(this string symbolString)
     {
-        char c  = char.ToUpper(symbolString[0]);
-        return c + symbolString.Substring(1);
+        if (string.IsNullOrWhiteSpace(symbolString))
+            return string.Empty;
+
+        bool capitalizeNext = true;
+        int j = 0;
+        char[] characters = new char[symbolString.Length];
+
+        for (int i = 0; i < symbolString.Length; i++)
+        {
+            char c = symbolString[i];
+            if(unallowedChars.Contains(c))
+            {
+                capitalizeNext = true;
+                continue;
+            }
+            else if(capitalizeNext)
+            {
+                characters[j++] = char.ToUpperInvariant(c);
+                capitalizeNext = false;
+            }
+            else
+            {
+                characters[j++] = c;
+            }
+        }
+
+        return new(characters, 0, j);
     }
 }
