@@ -5,7 +5,7 @@ namespace Hello;
 
 public class HelloWorldClass
 {
-    [Command("hi")]
+    [Command("hello-world")]
     public void Execute(
         string message, 
         string option1 = "opt 1 default value", 
