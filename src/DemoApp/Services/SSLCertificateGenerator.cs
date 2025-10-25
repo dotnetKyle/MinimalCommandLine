@@ -13,7 +13,7 @@ public class SSLCertificateGenerator
         _serialNumberProvider = serialNumberProvider;
     }
 
-    [Command("ssl")]
+    [Handler("ssl")]
     public async Task GenerateSslCertAsync(
         string commonName,
         string issuerFilePath2,

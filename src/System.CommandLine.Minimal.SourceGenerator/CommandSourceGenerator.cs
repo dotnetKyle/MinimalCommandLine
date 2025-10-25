@@ -16,7 +16,7 @@ public class CommandSourceGenerator : IIncrementalGenerator
         // attributes
         IncrementalValueProvider<ImmutableArray<GeneratingCommandBinder>> bindersProvider = context.SyntaxProvider
             .ForAttributeWithMetadataName(
-                "System.CommandLine.Minimal.CommandAttribute",
+                "System.CommandLine.Minimal.HandlerAttribute",
                 predicate: MethodDeclPredicate,
                 transform: GeneratorBindingsProvider.Transform
             ).Collect();
