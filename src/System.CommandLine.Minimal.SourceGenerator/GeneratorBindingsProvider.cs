@@ -25,6 +25,31 @@ internal static class GeneratorBindingsProvider
             && a.AttributeClass.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.CommandLine.Minimal.HandlerAttribute");
         string? commandName = handlerAttribute?.ConstructorArguments.FirstOrDefault().Value as string;
 
+        Location? argumentLocation = null;
+        if (ctx.TargetNode is MethodDeclarationSyntax methodDecl)
+        {
+            AttributeSyntax? handlerAttrSyntax = methodDecl.AttributeLists
+                .SelectMany(attrs => attrs.Attributes)
+                .FirstOrDefault(attr => ctx.SemanticModel
+                    .GetTypeInfo(attr)
+                    .Type?
+                    .ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.CommandLine.Minimal.HandlerAttribute"
+                );
+            argumentLocation = handlerAttrSyntax?.ArgumentList?.Arguments.FirstOrDefault()?.GetLocation();
+        }
+        //// Find the AttributeSyntax node for the HandlerAttribute
+        //AttributeSyntax? handlerAttributeSyntax = ctx.TargetNode switch
+        //{
+        //    MethodDeclarationSyntax methodDecl => methodDecl.AttributeLists
+        //        .SelectMany(list => list.Attributes)
+        //        .FirstOrDefault(attr =>
+        //            ctx.SemanticModel.GetTypeInfo(attr).Type?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
+        //            == "global::System.CommandLine.Minimal.HandlerAttribute"),
+        //    _ => null
+        //};
+        //Location? argumentLocation = handlerAttributeSyntax?.ArgumentList?.Arguments.FirstOrDefault()?.GetLocation();
+
+
         string classNamespace = methodSymbol.ContainingNamespace.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         string className = methodSymbol.ContainingType.Name;
         string methodName = methodSymbol.Name;
@@ -73,6 +98,7 @@ internal static class GeneratorBindingsProvider
             MethodName: methodName,
             MethodReturnType: methodReturnType,
             MethodIsStatic: methodIsStatic,
+            CommandNameLocation: argumentLocation,
             Bindings: bindings.ToImmutableArray());
     }
 
@@ -221,6 +247,7 @@ internal record GeneratingCommandBinder(
     string MethodName,
     string MethodReturnType,
     bool MethodIsStatic,
+    Location? CommandNameLocation,
     ImmutableArray<ParameterBinding>? Bindings
 )
 {

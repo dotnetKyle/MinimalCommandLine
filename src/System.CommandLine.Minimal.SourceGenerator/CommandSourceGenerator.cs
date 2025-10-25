@@ -1,6 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.CommandLine.Minimal.SourceGenerator;
 using System.Threading;
 
 namespace System.CommandLine.Minimal.SourceGeneration;
@@ -22,17 +24,32 @@ public class CommandSourceGenerator : IIncrementalGenerator
             ).Collect();
 
         context.RegisterSourceOutput(bindersProvider, (spc, binders) => {
-            
+            HashSet<string> commandNames = new();
+
             // first generate and create all of the CommandOptions classes
             foreach (GeneratingCommandBinder? binder in binders)
             {
+                if(binder.CommandName is null || string.IsNullOrWhiteSpace(binder.CommandName))
+                {
+                    spc.ReportCommandNameEmptyError(binder.CommandNameLocation);
+                    continue;
+                }
+                if(commandNames.Contains(binder.CommandName))
+                {
+                    spc.ReportCommandNameConflict(binder.CommandNameLocation, binder.CommandName);
+                    continue;
+                }
+
+                // command name is validated so add to the hashset
+                commandNames.Add(binder.CommandName);
+
                 string? code = CommandOptionsWriter.GenerateOptions(binder);
                 if(code is not null)
                 {
                     spc.AddSource($"{binder.ClassName}_{binder.MethodName}_Command.g.cs", code);
                 }
             }
-
+            
             // Emit the aggregated Register method
             string? registryCode = MapAllCommandsExtensionWriter.GenerateMapAllCommandsExt(binders);
             if(registryCode is not null)

@@ -6,7 +6,7 @@ namespace DemoApp.Services;
 
 public class IntermediateCaGenerator
 {
-    ISerialNumberProvider _serialNumberProvider;
+    readonly ISerialNumberProvider _serialNumberProvider;
     public IntermediateCaGenerator(ISerialNumberProvider serialNumberProvider)
     {
         _serialNumberProvider = serialNumberProvider;
