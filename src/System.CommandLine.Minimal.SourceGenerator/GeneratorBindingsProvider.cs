@@ -21,9 +21,9 @@ internal static class GeneratorBindingsProvider
         if (ctx.TargetSymbol is not IMethodSymbol methodSymbol)
             return null!;
 
-        AttributeData? commandAttribute = ctx.Attributes.FirstOrDefault(a => a.AttributeClass is not null 
-            && a.AttributeClass.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.CommandLine.Minimal.CommandAttribute");
-        string? commandName = commandAttribute?.ConstructorArguments.FirstOrDefault().Value as string;
+        AttributeData? handlerAttribute = ctx.Attributes.FirstOrDefault(a => a.AttributeClass is not null 
+            && a.AttributeClass.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.CommandLine.Minimal.HandlerAttribute");
+        string? commandName = handlerAttribute?.ConstructorArguments.FirstOrDefault().Value as string;
 
         string classNamespace = methodSymbol.ContainingNamespace.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         string className = methodSymbol.ContainingType.Name;

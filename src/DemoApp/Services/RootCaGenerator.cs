@@ -6,7 +6,7 @@ namespace DemoApp.Services;
 
 public class RootCaGenerator
 {
-    [Command("root")]
+    [Handler("root")]
     public static async Task GenerateRootCaAsync(
         [FromServices] ISerialNumberProvider serialNumberProvider,
         string commonName,

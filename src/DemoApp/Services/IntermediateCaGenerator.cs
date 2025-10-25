@@ -12,7 +12,7 @@ public class IntermediateCaGenerator
         _serialNumberProvider = serialNumberProvider;
     }
 
-    [Command(name:"intermediate")]
+    [Handler(name:"intermediate")]
     public async Task GenerateCaAsync(
         string commonName,
         string issuerFilePath,
