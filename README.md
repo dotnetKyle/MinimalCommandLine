@@ -8,7 +8,7 @@
 > 
 > The primary goal of this library is to give a developer the power to get started with 
 > System.CommandLine and to create commands with minimal boilerplate. All you have to do 
-> to turn a function into a command is decorate it with the `[Command]` attribute!
+> to turn a function into a command is decorate it with the `[Handler]` attribute!
 
 ## Getting Started
 
@@ -22,7 +22,7 @@ using System.CommandLine.Minimal;
 public class HelloWorld
 {
     // Just decorate the method with the command attribute!
-    [Command("hello")]
+    [Handler("hello")]
     public void Execute(string message)
     {
         Console.WriteLine("Hello World!  {0}", message);
@@ -74,7 +74,7 @@ using System.CommandLine.Minimal;
 
 public class MyCommand
 {
-    [Command("mycommand")]
+    [Handler("mycommand")]
     public void Run(string myArgument, string? myOption = null)
     {
         Console.WriteLine("Arg:{0}, Option:{0}", myArgument, myOption);
@@ -105,7 +105,7 @@ using System.CommandLine.Minimal;
 
 public class MyCommand
 {
-    [Command("mycommand")]
+    [Handler("mycommand")]
     public void Execute(string myArgument, [Argument] string? myArgument2 = null)
     {
         Console.WriteLine("Arg:{0}, Arg2:{0}", myArgument, myArgument2);
@@ -165,7 +165,7 @@ public class GreeterCommand
         _myInjectedClass = myInjectedClass;
     }
 
-    [Command("greet")]
+    [Handler("greet")]
     public async Task ExecuteAsync(string name, string? tone = null)
     {
         // ... use _myInjectedClass here
@@ -179,7 +179,7 @@ or
 // a static class command
 public static class GreeterCommand
 {
-    [Command("greet")]
+    [Handler("greet")]
     public static async Task ExecuteAsync(
         string name, 
         [FromServices] MyInjectedClass myInjectedClass,    
