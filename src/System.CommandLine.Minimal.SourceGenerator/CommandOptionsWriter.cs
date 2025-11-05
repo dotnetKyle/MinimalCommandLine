@@ -47,7 +47,7 @@ internal static class CommandOptionsWriter
                 );
                 // do not add the class to services if it's static
                 if (!binder.MethodIsStatic)
-                    sb.AppendLine($"            builder.Services.TryAddTransient<{binder.CommandOptionsName}>();");
+                    sb.AppendLine($"            builder.Services.TryAddTransient<{binder.CommandNameTitleCase}>();");
                 sb.AppendLine(
                     $$"""
                                 {{binder.CommandOptionsName}} cliOptions = builder.TryRegisterCommandOptions<{{binder.CommandOptionsName}}>();
