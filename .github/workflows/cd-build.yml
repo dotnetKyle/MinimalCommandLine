@@ -18,16 +18,16 @@ jobs:
         dotnet-version: 8.0.x
         
     - name: Restore dependencies
-      run: dotnet restore src/System.CommandLine.Minimal.sln
+      run: dotnet restore src/MinimalCli.sln
       # build solution here instead of project
     - name: Build Minimal CommandLine
-      run: dotnet build src/System.CommandLine.Minimal.sln -c Release --no-restore
+      run: dotnet build src/MinimalCli.sln -c Release --no-restore
       
       # packs all nuget packages at once 
     - name: Pack MinimalCommandLine Nuget Alpha
-      run: dotnet pack src/System.CommandLine.Minimal/System.CommandLine.Minimal.csproj -p:PackageVersion=0.5.0.${{github.run_number}}-alpha -o ./packages 
+      run: dotnet pack src/MinimalCli/MinimalCli.csproj -p:PackageVersion=0.5.0.${{github.run_number}}-alpha -o ./packages 
     - name: Pack MinimalCommandLine Nuget
-      run: dotnet pack src/System.CommandLine.Minimal/System.CommandLine.Minimal.csproj -p:PackageVersion=0.5.0.${{github.run_number}} -o ./packages 
+      run: dotnet pack src/MinimalCli/MinimalCli.csproj -p:PackageVersion=0.5.0.${{github.run_number}} -o ./packages 
 
     - name: Publish MinimalCommandLine Artifacts
       uses: actions/upload-artifact@v4

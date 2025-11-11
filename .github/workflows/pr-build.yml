@@ -16,10 +16,10 @@ jobs:
         dotnet-version: 8.0.x
         
     - name: Restore dependencies
-      run: dotnet restore src/System.CommandLine.Minimal.sln
+      run: dotnet restore src/MinimalCli.sln
       
     - name: Build Minimal CommandLine
-      run: dotnet build src/System.CommandLine.Minimal.sln -c Release --no-restore
+      run: dotnet build src/MinimalCli.sln -c Release --no-restore
       
     - name: Build HelloWorld Demo
       run: dotnet build src/HelloWorld/HelloWorld.csproj -c Release --no-restore

@@ -1,7 +1,7 @@
 ﻿using DemoApp.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System.CommandLine;
-using System.CommandLine.Minimal;
+using MinimalCli;
 
 MinimalCommandLineBuilder builder = new(args);
 

@@ -1,5 +1,4 @@
-﻿using System.CommandLine;
-using System.CommandLine.Minimal;
+﻿using MinimalCli;
 
 namespace Hello;
 

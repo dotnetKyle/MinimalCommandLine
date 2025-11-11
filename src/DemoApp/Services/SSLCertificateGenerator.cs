@@ -1,4 +1,4 @@
-﻿using System.CommandLine.Minimal;
+﻿using MinimalCli;
 using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
