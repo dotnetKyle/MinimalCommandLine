@@ -15,8 +15,8 @@
   </ItemGroup>-->
 
 	<ItemGroup>
-		<ProjectReference Include="..\System.CommandLine.Minimal.Core\MinimalCli.Core.csproj" />
-		<ProjectReference Include="..\System.CommandLine.Minimal.SourceGenerator\MinimalCli.SourceGenerator.csproj">
+		<ProjectReference Include="..\MinimalCli.Core\MinimalCli.Core.csproj" />
+		<ProjectReference Include="..\MinimalCli.SourceGenerator\MinimalCli.SourceGenerator.csproj">
 			<OutputItemType>Analyzer</OutputItemType>
 			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
 		</ProjectReference>

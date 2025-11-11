@@ -1,4 +1,4 @@
-﻿using System.CommandLine.Minimal;
+﻿using MinimalCli;
 
 MinimalCommandLineBuilder builder = new(args);
 

@@ -5,7 +5,7 @@ VisualStudioVersion = 17.3.32804.467
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DemoApp", "DemoApp\DemoApp.csproj", "{C10C4313-AF8A-437C-825F-A7733F288DEE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinimalCLI", "System.CommandLine.Minimal\MinimalCLI.csproj", "{2227CB1E-60FF-47C1-82E3-67A348F614AE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinimalCli", "MinimalCli\MinimalCli.csproj", "{2227CB1E-60FF-47C1-82E3-67A348F614AE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{14529171-0525-4EF0-B11E-40129813AD44}"
 	ProjectSection(SolutionItems) = preProject
@@ -16,9 +16,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelloWorld", "HelloWorld\HelloWorld.csproj", "{B20E4694-01C6-4866-966D-56961B159961}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalCli.Core", "System.CommandLine.Minimal.Core\MinimalCli.Core.csproj", "{86A9F343-6ACE-4291-8016-A8B242FCAFDA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalCli.Core", "MinimalCli.Core\MinimalCli.Core.csproj", "{86A9F343-6ACE-4291-8016-A8B242FCAFDA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalCli.SourceGenerator", "System.CommandLine.Minimal.SourceGenerator\MinimalCli.SourceGenerator.csproj", "{5AF84270-8ECB-4097-A8DA-9C676E1E9373}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalCli.SourceGenerator", "MinimalCli.SourceGenerator\MinimalCli.SourceGenerator.csproj", "{5AF84270-8ECB-4097-A8DA-9C676E1E9373}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

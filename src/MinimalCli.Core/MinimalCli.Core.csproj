@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
+		<PackageId>MinimalCommandLine.Core</PackageId>
+		<Title>Minimal Command Line Core APIs</Title>
+		<Authors>dotnetKyle</Authors>
+		<Description>A set of minimal builders that sits on top of the System.CommandLine namespace to give an experience similar to the ASP.Net Core minimal API builders.</Description>
+		<PackageProjectUrl></PackageProjectUrl>
+		<RepositoryUrl>https://github.com/dotnetKyle/MinimalCommandLine</RepositoryUrl>
+		<PackageTags>Command; Line</PackageTags>
+		<DebugType>embedded</DebugType>
+		<RootNamespace>MinimalCli</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+		<PackageReference Include="System.CommandLine" Version="2.0.0" />
+	</ItemGroup>
+
+</Project>

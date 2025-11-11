@@ -17,7 +17,7 @@
 First, create a new console application, then create a class to house the logic for your command:
 
 ```csharp
-using System.CommandLine.Minimal;
+using MinimalCli;
 
 public class HelloWorld
 {
@@ -33,7 +33,7 @@ public class HelloWorld
 Next, setup your Console App's `Program.cs` file:
 
 ```csharp
-using System.CommandLine.Minimal;
+using MinimalCli;
 
 var builder = new MinimalCommandLineBuilder(args)
 
@@ -70,7 +70,7 @@ Add a reference to the nuget package `MinimalCommandLine`.
 A simple command with an Argument and an Option:
 
 ```csharp
-using System.CommandLine.Minimal;
+using MinimalCli;
 
 public class MyCommand
 {
@@ -101,7 +101,7 @@ a `System.CommandLine.Option` is created when the parameter is optional.
 A simple command with two Arguments: a required Argument and an optional Argument:
 
 ```csharp
-using System.CommandLine.Minimal;
+using MinimalCli;
 
 public class MyCommand
 {
@@ -123,7 +123,7 @@ registering a command, the source generator creates an extension method that you
 the descriptions, aliases, default values, and any other System.CommandLine functionality.
 
 ```csharp
-using System.CommandLine.Minimal;
+using MinimalCli;
 
 // after creating a 'greet' command that accepts a 'name' argument:
 
