@@ -20,16 +20,16 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore src/MinimalCli.sln
       # build solution here instead of project
-    - name: Build Minimal CommandLine
+    - name: Build Minimal Command Line
       run: dotnet build src/MinimalCli.sln -c Release --no-restore
       
       # packs all nuget packages at once 
-    - name: Pack MinimalCommandLine Nuget Alpha
-      run: dotnet pack src/MinimalCli/MinimalCli.csproj -p:PackageVersion=0.5.0.${{github.run_number}}-alpha -o ./packages 
-    - name: Pack MinimalCommandLine Nuget
-      run: dotnet pack src/MinimalCli/MinimalCli.csproj -p:PackageVersion=0.5.0.${{github.run_number}} -o ./packages 
+    - name: Pack Minimal Command Line Nuget Alpha
+      run: dotnet pack src/MinimalCli/MinimalCli.csproj -p:PackageVersion=2.0.0.${{github.run_number}}-alpha -o ./packages 
+    - name: Pack Minimal Command Line Nuget
+      run: dotnet pack src/MinimalCli/MinimalCli.csproj -p:PackageVersion=2.0.0.${{github.run_number}} -o ./packages 
 
-    - name: Publish MinimalCommandLine Artifacts
+    - name: Publish Minimal Command Line Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: Nugets
@@ -50,8 +50,8 @@ jobs:
       
     - name: Display structure of downloaded files
       run: ls -R
-    - name: Push MinimalCommandLine Nuget
-      run: dotnet nuget push ./MinimalCli.0.5.0.${{github.run_number}}-alpha.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
+    - name: Push Minimal Command Line Nuget
+      run: dotnet nuget push ./MinimalCli.2.0.0.${{github.run_number}}-alpha.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
 
   production:
     needs: integration
@@ -65,5 +65,5 @@ jobs:
       with:
         name: Nugets
         
-    - name: Push MinimalCommandLine Nuget
-      run: dotnet nuget push ./MinimalCli.0.5.0.${{github.run_number}}.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
+    - name: Push Minimal Command Line Nuget
+      run: dotnet nuget push ./MinimalCli.2.0.0.${{github.run_number}}.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json

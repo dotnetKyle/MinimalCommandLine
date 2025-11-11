@@ -1,6 +1,6 @@
-# System.CommandLine.Minimal
+# MinimalCli
 
-> A source generator that sits on top of the `System.CommandLine` namespace 
+> A source generator that works with the `System.CommandLine` namespace 
 > to give an experience similar to the ASP.Net Core minimal API builders. This library 
 > uses the Hosting libraries so a dotnet developer feels at home.
 > 
@@ -52,7 +52,7 @@ will map the parameter `message` to a string Argument called `<Message>`.
 
 Add a reference to the nuget package `MinimalCommandLine`.
 
-- Via csproj: `<PackageReference Include="MinimalCommandLine" Version="0.5.0.10" />`
+- Via csproj: `<PackageReference Include="MinimalCommandLine" Version="2.0.0.36" />`
 - Via dotnet cli: `dotnet package add MinimalCommandLine`
 - Via Visual Studio Menu: 
     * Tools >
@@ -74,7 +74,7 @@ using MinimalCli;
 
 public class MyCommand
 {
-    [Handler("mycommand")]
+    [Handler("my-command")]
     public void Run(string myArgument, string? myOption = null)
     {
         Console.WriteLine("Arg:{0}, Option:{0}", myArgument, myOption);
@@ -83,14 +83,14 @@ public class MyCommand
 ```
 
 This registers the following:
- * A command called `mycommand` to the handler `void Run(..)`.
+ * A command called `my-command` to the handler `void Run(..)`.
  * The parameter `myArgument` to an Argument called `<MyArgument>`.
  * The optional parameter `myOption` to an Option called `--my-option`. 
 
 The command can be called like this:
 
 ```bash
-mycommand "Foo" --my-option "Bar"
+my-command "Foo" --my-option "Bar"
 ```
 
 Conventionally a `System.CommandLine.Argument` is created when the parameter is required and 
@@ -105,7 +105,7 @@ using MinimalCli;
 
 public class MyCommand
 {
-    [Handler("mycommand")]
+    [Handler("my-command")]
     public void Execute(string myArgument, [Argument] string? myArgument2 = null)
     {
         Console.WriteLine("Arg:{0}, Arg2:{0}", myArgument, myArgument2);
