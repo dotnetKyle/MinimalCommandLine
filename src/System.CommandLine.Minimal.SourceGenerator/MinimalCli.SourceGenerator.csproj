@@ -22,7 +22,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\System.CommandLine.Minimal.Core\System.CommandLine.Minimal.Core.csproj" />
+		<ProjectReference Include="..\System.CommandLine.Minimal.Core\MinimalCli.Core.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
