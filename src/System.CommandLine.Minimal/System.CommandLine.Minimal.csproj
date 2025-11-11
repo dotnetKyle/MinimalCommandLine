@@ -26,19 +26,15 @@
 
 	<ItemGroup>
 		<!-- Runtime library -->
-		<Content Include="..\System.CommandLine.Minimal.Core\bin\$(Configuration)\netstandard2.0\System.CommandLine.Minimal.Core.dll"
-             Pack="true"
-             PackagePath="lib/netstandard2.0/" />
+		<Content Include="..\System.CommandLine.Minimal.Core\bin\$(Configuration)\netstandard2.0\System.CommandLine.Minimal.Core.dll" Pack="true" PackagePath="lib/netstandard2.0/" />
 
 		<!-- Source generator library -->
-		<Content Include="..\System.CommandLine.Minimal.SourceGenerator\bin\$(Configuration)\netstandard2.0\System.CommandLine.Minimal.SourceGenerator.dll"
-             Pack="true"
-             PackagePath="analyzers/dotnet/cs/" />
+		<Content Include="..\System.CommandLine.Minimal.SourceGenerator\bin\$(Configuration)\netstandard2.0\System.CommandLine.Minimal.SourceGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs/" />
 	</ItemGroup>
 	
 	<ItemGroup>
 		<!-- Runtime library nuget dependencies -->
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
-		<PackageReference Include="System.CommandLine" Version="2.0.0-rc.1.25451.107" />
+		<PackageReference Include="System.CommandLine" Version="2.0.0" />
 	</ItemGroup>
 </Project>
