@@ -4,7 +4,7 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
-		<PackageId>MinimalCommandLine.Core</PackageId>
+		<PackageId>MinimalCli.Core</PackageId>
 		<Title>Minimal Command Line Core APIs</Title>
 		<Authors>dotnetKyle</Authors>
 		<Description>A set of minimal builders that sits on top of the System.CommandLine namespace to give an experience similar to the ASP.Net Core minimal API builders.</Description>

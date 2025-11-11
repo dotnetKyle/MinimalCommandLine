@@ -4,7 +4,7 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
-		<PackageId>MinimalCommandLine</PackageId>
+		<PackageId>MinimalCli</PackageId>
 		<Title>Minimal Command Line</Title>
 		<Authors>dotnetKyle</Authors>
 		<Description>A source generator on top of System.CommandLine to minimize the boiler plate needed to get started. Just add a [Command] attribute to a function to get started!</Description>
