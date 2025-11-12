@@ -3,8 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
 using MinimalCli.Bindings;
+using System.Linq;
 
 namespace MinimalCli;
 
@@ -47,7 +47,7 @@ public class MinimalCommandLineBuilder : IHostApplicationBuilder
         return newOptions;
     }
 
-    internal RootCommand RootCommand { get; } = new();
+    internal RootCommand? RootCommand { get; private set; }
     public MinimalCommandLineApp Build()
     {
         // add required services
@@ -58,6 +58,19 @@ public class MinimalCommandLineBuilder : IHostApplicationBuilder
         CommandBindingFactory cmdBindingFactory = new();
         this.Services.AddSingleton(cmdBindingFactory);
 
+        // check if there was a generated root command
+        var rootOptions = commandOptionsCollection.FirstOrDefault(opt => opt.Command is RootCommand);
+        if (rootOptions is not null)
+        {
+            this.RootCommand = (RootCommand)rootOptions.Command;
+            cmdBindingFactory.AddRootCommand(rootOptions);
+            commandOptionsCollection.Remove(rootOptions);
+            ParameterBinding[] bindings = rootOptions.SetupCommandParameterBindings();
+        }
+        else
+        {
+            this.RootCommand = new();
+        }
         // NOTES: going to have to create a factory to get the correct instance of the CommandOptions
         // for the command that was invoked, inside the Handler(serivces) function, can call
         // var factory = services.GetRequiredService<CommandOptionsFactory>();
@@ -107,7 +120,7 @@ public class MinimalCommandLineBuilder : IHostApplicationBuilder
         }
 
         // pass in args from builder
-        MinimalCommandLineApp app = new(this, this.commandOptionsCollection, this.args);
+        MinimalCommandLineApp app = new(this, this.args);
 
         return app;
     }

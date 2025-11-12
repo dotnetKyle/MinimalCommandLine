@@ -2,8 +2,8 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using MinimalCli.SourceGeneration.Conventions;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading;
 
 namespace MinimalCli.SourceGeneration;
@@ -14,15 +14,19 @@ internal static class GeneratorBindingsProvider
 {
     /// <summary>
     /// The transform is the part where we gather the information from the function that we need later.
-    /// This information should be deterministic and should not change if the underling method signature doesn't change.
+    /// This information should be deterministic and should not change if the underlying method signature doesn't change.
     /// </summary>
     public static GeneratingCommandBinder Transform(GeneratorAttributeSyntaxContext ctx, CancellationToken cancellationToken)
     {
         if (ctx.TargetSymbol is not IMethodSymbol methodSymbol)
             return null!;
 
+        const string globalHandlerAttribute = "global::MinimalCli.HandlerAttribute";
+
+        //AttributeData? rootHandlerAttribute = ctx.Attributes.FirstOrDefault(a => a.AttributeClass is not null
+        //    && a.AttributeClass.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::MinimalCli.RootHandlerAttribute");
         AttributeData? handlerAttribute = ctx.Attributes.FirstOrDefault(a => a.AttributeClass is not null 
-            && a.AttributeClass.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::MinimalCli.HandlerAttribute");
+            && a.AttributeClass.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == globalHandlerAttribute);
         string? commandName = handlerAttribute?.ConstructorArguments.FirstOrDefault().Value as string;
 
         Location? argumentLocation = null;
@@ -33,22 +37,10 @@ internal static class GeneratorBindingsProvider
                 .FirstOrDefault(attr => ctx.SemanticModel
                     .GetTypeInfo(attr)
                     .Type?
-                    .ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::MinimalCli.HandlerAttribute"
+                    .ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == globalHandlerAttribute
                 );
             argumentLocation = handlerAttrSyntax?.ArgumentList?.Arguments.FirstOrDefault()?.GetLocation();
         }
-        //// Find the AttributeSyntax node for the HandlerAttribute
-        //AttributeSyntax? handlerAttributeSyntax = ctx.TargetNode switch
-        //{
-        //    MethodDeclarationSyntax methodDecl => methodDecl.AttributeLists
-        //        .SelectMany(list => list.Attributes)
-        //        .FirstOrDefault(attr =>
-        //            ctx.SemanticModel.GetTypeInfo(attr).Type?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
-        //            == "global::MinimalCli.HandlerAttribute"),
-        //    _ => null
-        //};
-        //Location? argumentLocation = handlerAttributeSyntax?.ArgumentList?.Arguments.FirstOrDefault()?.GetLocation();
-
 
         string classNamespace = methodSymbol.ContainingNamespace.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         string className = methodSymbol.ContainingType.Name;
@@ -56,10 +48,75 @@ internal static class GeneratorBindingsProvider
         string methodReturnType = methodSymbol.ReturnType.ToDisplayString(NullableFlowState.None, SymbolDisplayFormat.FullyQualifiedFormat);
         bool methodIsStatic = methodSymbol.IsStatic;
 
-        ImmutableArray<IParameterSymbol> parameters = methodSymbol.Parameters;
+        ImmutableArray<ParameterBinding> bindings = GetParameterBindings(ctx, methodSymbol.Parameters);
 
+        return new GeneratingCommandBinder(
+            CommandName: commandName,
+            ClassNamespace: classNamespace,
+            ClassName: className,
+            MethodName: methodName,
+            MethodReturnType: methodReturnType,
+            MethodIsStatic: methodIsStatic,
+            CommandNameLocation: argumentLocation,
+            Bindings: bindings);
+    }
+
+
+    /// <summary>
+    /// The transform is the part where we gather the information from the function that we need later.
+    /// This information should be deterministic and should not change if the underlying method signature doesn't change.
+    /// </summary>
+    public static GeneratingRootCommandBinder TransformForRoot(GeneratorAttributeSyntaxContext ctx, CancellationToken cancellationToken)
+    {
+        if (ctx.TargetSymbol is not IMethodSymbol methodSymbol)
+            return null!;
+
+        const string globalRootHandlerAttribute = "global::MinimalCli.RootHandlerAttribute";
+
+
+        AttributeData? rootHandlerAttribute = ctx.Attributes.FirstOrDefault(a => a.AttributeClass is not null
+            && a.AttributeClass.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == globalRootHandlerAttribute);
+
+        // may want to do an analyzer warning if this method has both a RootHandler attribute and a Handler attribute.
+        //AttributeData? handlerAttribute = ctx.Attributes.FirstOrDefault(a => a.AttributeClass is not null
+        //    && a.AttributeClass.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::MinimalCli.HandlerAttribute");
+
+        Location? argumentLocation = null;
+        if (ctx.TargetNode is MethodDeclarationSyntax methodDecl)
+        {
+            AttributeSyntax? handlerAttrSyntax = methodDecl.AttributeLists
+                .SelectMany(attrs => attrs.Attributes)
+                .FirstOrDefault(attr => ctx.SemanticModel
+                    .GetTypeInfo(attr)
+                    .Type?
+                    .ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == globalRootHandlerAttribute
+                );
+            argumentLocation = handlerAttrSyntax?.GetLocation();
+        }
+
+        string classNamespace = methodSymbol.ContainingNamespace.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        string className = methodSymbol.ContainingType.Name;
+        string methodName = methodSymbol.Name;
+        string methodReturnType = methodSymbol.ReturnType.ToDisplayString(NullableFlowState.None, SymbolDisplayFormat.FullyQualifiedFormat);
+        bool methodIsStatic = methodSymbol.IsStatic;
+
+        ImmutableArray<ParameterBinding> bindings = GetParameterBindings(ctx, methodSymbol.Parameters);
+
+        return new GeneratingRootCommandBinder(
+            ClassNamespace: classNamespace,
+            ClassName: className,
+            MethodName: methodName,
+            MethodReturnType: methodReturnType,
+            MethodIsStatic: methodIsStatic,
+            CommandNameLocation: argumentLocation,
+            Bindings: bindings);
+    }
+
+    private static ImmutableArray<ParameterBinding> GetParameterBindings(GeneratorAttributeSyntaxContext ctx, ImmutableArray<IParameterSymbol> parameters)
+    {
         List<ParameterBinding> bindings = new();
-        foreach(IParameterSymbol param in parameters)
+
+        foreach (IParameterSymbol param in parameters)
         {
             ImmutableArray<AttributeData> attributes = param.GetAttributes();
 
@@ -81,7 +138,7 @@ internal static class GeneratorBindingsProvider
             {
                 bindings.BindServiceDescriptor(name, type);
             }
-            else if(bindingType == BindingType.Option)
+            else if (bindingType == BindingType.Option)
             {
                 bindings.BindOption(name, type, GetSymbolDefaultValue(ctx, param), IsParamCollectionType(param));
             }
@@ -91,15 +148,7 @@ internal static class GeneratorBindingsProvider
             }
         }
 
-        return new GeneratingCommandBinder(
-            CommandName: commandName,
-            ClassNamespace: classNamespace,
-            ClassName: className,
-            MethodName: methodName,
-            MethodReturnType: methodReturnType,
-            MethodIsStatic: methodIsStatic,
-            CommandNameLocation: argumentLocation,
-            Bindings: bindings.ToImmutableArray());
+        return bindings.ToImmutableArray();
     }
 
     private static BindingType DetermineBindingType(
@@ -238,63 +287,4 @@ internal static class GeneratorBindingsProvider
 
         return null;
     }
-}
-
-internal record GeneratingCommandBinder(
-    string? CommandName,
-    string ClassNamespace,
-    string ClassName,
-    string MethodName,
-    string MethodReturnType,
-    bool MethodIsStatic,
-    Location? CommandNameLocation,
-    ImmutableArray<ParameterBinding>? Bindings
-)
-{
-    public string CommandHelpName => Conventions.ParameterNameConversion.ToArgumentName(this.CommandName ?? "");
-    public string CommandNameTitleCase => this.CommandName?.ToSymbolName() ?? "";
-    public string CommandOptionsName => $"{this.CommandNameTitleCase}CommandOptions";
-    public string FullClassName => $"{this.ClassNamespace}.{this.ClassName}";
-    public string FullMethodName => $"{this.FullClassName}.{this.MethodName}";
-}
-
-internal abstract record ParameterBinding(string OriginalParameterName, string Type, string? DefaultValueConstant, bool IsCollectionType)
-{
-    public string NameTitleCase
-    {
-        get
-        {
-            return this.OriginalParameterName.ToSymbolName();
-        }
-    }
-    public string HelpName
-    {
-        get
-        {
-            // split and add spaces
-            char c = char.ToUpper(this.OriginalParameterName[0]);
-            return c + this.OriginalParameterName.Substring(1);
-        }
-    }
-}
-internal record ArgumentBinding(string OriginalParameterName, string Type, string? DefaultValueConstant, bool IsCollectionType)
-    : ParameterBinding(OriginalParameterName, Type, DefaultValueConstant, IsCollectionType)
-{
-    /// <summary>
-    /// The Argument name in title case, e.g. "myParameterName" becomes "My Parameter Name"
-    /// </summary>
-    public string ConventionalArgumentName 
-        => ParameterNameConversion.ToArgumentName(this.OriginalParameterName);
-}
-internal record OptionBinding(string OriginalParameterName, string Type, string? DefaultValueConstant, bool IsCollectionType)
-    : ParameterBinding(OriginalParameterName, Type, DefaultValueConstant, IsCollectionType)
-{
-    /// <summary>
-    /// The option name in kebab case, e.g. "myParameterName" becomes "--my-parameter-name"
-    /// </summary>
-    public string OptionName => ParameterNameConversion.ToOptionName(this.OriginalParameterName);
-}
-internal record FromServicesBinding(string OriginalParameterName, string Type)
-    : ParameterBinding(OriginalParameterName, Type, DefaultValueConstant:null, IsCollectionType:false)
-{ 
 }
