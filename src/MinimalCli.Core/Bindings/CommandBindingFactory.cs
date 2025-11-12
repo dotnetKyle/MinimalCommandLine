@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MinimalCli.Bindings;
+﻿namespace MinimalCli.Bindings;
 
 public class CommandBindingFactory
 {
@@ -9,6 +7,11 @@ public class CommandBindingFactory
     public CommandBindingFactory()
     {
         this.options = [];
+    }
+
+    public void AddRootCommand(CommandOptions rootOptions)
+    {
+        this.options.Add(rootOptions.Command.Name, rootOptions);
     }
 
     public void AddCommandOptions(string commandName, CommandOptions options)

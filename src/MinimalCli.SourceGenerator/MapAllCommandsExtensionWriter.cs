@@ -1,4 +1,6 @@
 ﻿using System.Collections.Immutable;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace MinimalCli.SourceGeneration;
@@ -10,11 +12,11 @@ internal static class MapAllCommandsExtensionWriter
     /// the Command classes with dependency injection and the CommandOptions with 
     /// the builder.
     /// </summary>
-    /// <param name="binders">The generated command binding information</param>
+    /// <param name="commandBinders">The generated command binding information</param>
     /// <returns></returns>
-    internal static string? GenerateMapAllCommandsExt(ImmutableArray<GeneratingCommandBinder> binders)
+    internal static string? GenerateMapAllCommandsExt(ImmutableArray<GeneratingCommandBinder> commandBinders, ImmutableArray<GeneratingRootCommandBinder> rootCommandBinders)
     {
-        if(binders.Length > 0)
+        if(commandBinders.Length > 0 || rootCommandBinders.Length > 0)
         {
             StringBuilder sb = new(
                 """
@@ -30,7 +32,26 @@ internal static class MapAllCommandsExtensionWriter
                     public static MinimalCommandLineBuilder MapAllCommands(this MinimalCommandLineBuilder builder)
                     {
                 """);
-            foreach(GeneratingCommandBinder binder in binders)
+
+            // generate code for root command (there should only be one)
+            if(rootCommandBinders.Length == 1)
+            {
+                GeneratingRootCommandBinder? rootBinder = rootCommandBinders.FirstOrDefault();
+                if(rootBinder is not null)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine($"        // register Root Command");
+                    if (!rootBinder.MethodIsStatic)
+                    {
+                        sb.AppendLine($"        builder.Services.TryAddTransient<{rootBinder.FullClassName}>();");
+                    }
+                    sb.AppendLine($"        builder.TryRegisterCommandOptions<{rootBinder.CommandOptionsName}>();");
+                    sb.AppendLine();
+                }
+            }
+
+            // generate code for all commands
+            foreach(GeneratingCommandBinder binder in commandBinders)
             {
                 if(binder.CommandName is not null)
                 {
@@ -44,6 +65,7 @@ internal static class MapAllCommandsExtensionWriter
                     sb.AppendLine();
                 }
             }
+
             sb.AppendLine("""
 
                         return builder;

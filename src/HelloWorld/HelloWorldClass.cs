@@ -4,7 +4,7 @@ namespace Hello;
 
 public class HelloWorldClass
 {
-    [Handler("hello-world")]
+    [RootHandler]
     public void Execute(
         string message, 
         string option1 = "opt 1 default value", 

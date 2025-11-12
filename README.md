@@ -21,8 +21,8 @@ using MinimalCli;
 
 public class HelloWorld
 {
-    // Just decorate the method with the command attribute!
-    [Handler("hello")]
+    // Just decorate the method with the RootHandler attribute!
+    [RootHandler]
     public void Execute(string message)
     {
         Console.WriteLine("Hello World!  {0}", message);
@@ -74,6 +74,7 @@ using MinimalCli;
 
 public class MyCommand
 {
+    // use the handler attribute to add additional commands
     [Handler("my-command")]
     public void Run(string myArgument, string? myOption = null)
     {

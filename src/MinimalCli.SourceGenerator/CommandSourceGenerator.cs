@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using MinimalCli.SourceGenerator;
 using System.Threading;
+using System.Linq;
 
 namespace MinimalCli.SourceGeneration;
 
@@ -16,18 +17,31 @@ public class CommandSourceGenerator : IIncrementalGenerator
         //context.RegisterPostInitializationOutput(GenerateMainFunctionCode);
 
         // attributes
-        IncrementalValueProvider<ImmutableArray<GeneratingCommandBinder>> bindersProvider = context.SyntaxProvider
+        IncrementalValueProvider<ImmutableArray<GeneratingRootCommandBinder>> rootHandlerProvider = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                "MinimalCli.RootHandlerAttribute",
+                predicate: MethodDeclPredicate,
+                transform: GeneratorBindingsProvider.TransformForRoot
+            ).Collect();
+
+        IncrementalValueProvider<ImmutableArray<GeneratingCommandBinder>> handlersProvider = context.SyntaxProvider
             .ForAttributeWithMetadataName(
                 "MinimalCli.HandlerAttribute",
                 predicate: MethodDeclPredicate,
                 transform: GeneratorBindingsProvider.Transform
             ).Collect();
 
-        context.RegisterSourceOutput(bindersProvider, (spc, binders) => {
+        IncrementalValueProvider<(
+            ImmutableArray<GeneratingRootCommandBinder> RootBinders, 
+            ImmutableArray<GeneratingCommandBinder> CommandBinders
+            )> combined = rootHandlerProvider.Combine(handlersProvider);
+
+        // register output for commands
+        context.RegisterSourceOutput(combined, static (spc, binders) => {
             HashSet<string> commandNames = new();
 
             // first generate and create all of the CommandOptions classes
-            foreach (GeneratingCommandBinder? binder in binders)
+            foreach (GeneratingCommandBinder? binder in binders.CommandBinders)
             {
                 if(binder.CommandName is null || string.IsNullOrWhiteSpace(binder.CommandName))
                 {
@@ -49,15 +63,34 @@ public class CommandSourceGenerator : IIncrementalGenerator
                     spc.AddSource($"{binder.ClassName}_{binder.MethodName}_Command.g.cs", code);
                 }
             }
-            
+
+            if(binders.RootBinders.Length > 1)
+            {
+                // should only be 1 root handler
+                foreach(var root in binders.RootBinders)
+                    spc.ReportTooManyRootHandlersError(root.CommandNameLocation);
+            }
+            else
+            {
+                GeneratingRootCommandBinder? rootHandler = binders.RootBinders.FirstOrDefault();
+                if(rootHandler is not null)
+                {
+                    // generate root command options
+                    string? rootCode = CommandOptionsWriter.GenerateRootCommandOptions(rootHandler);
+                    if (rootCode is not null) 
+                    {
+                        spc.AddSource("RootCommand.g.cs", rootCode);
+                    }
+                }
+            }
+
             // Emit the aggregated Register method
-            string? registryCode = MapAllCommandsExtensionWriter.GenerateMapAllCommandsExt(binders);
+            string? registryCode = MapAllCommandsExtensionWriter.GenerateMapAllCommandsExt(binders.CommandBinders, binders.RootBinders);
             if(registryCode is not null)
             {
                 spc.AddSource("MapAllCommandsExtension.g.cs", registryCode);                
             }
         });
-
 
     }
 
