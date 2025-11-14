@@ -7,7 +7,7 @@
 		<PackageId>MinimalCli.SourceGenerator</PackageId>
 		<Title>Minimal Command Line Source Generator</Title>
 		<Authors>dotnetKyle</Authors>
-		<Description>A source generator for MinimalCommandLine. Enables the quick rigging of commands using a Command attribute.</Description>
+		<Description>A source generator for MinimalCommandLine. Enables the quick rigging of commands using a Handler attribute.</Description>
 		<PackageProjectUrl></PackageProjectUrl>
 		<RepositoryUrl>https://github.com/dotnetKyle/MinimalCommandLine</RepositoryUrl>
 		<PackageTags>Command; Line</PackageTags>
