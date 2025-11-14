@@ -10,7 +10,7 @@
 > System.CommandLine and to create commands with minimal boilerplate. All you have to do 
 > to turn a function into a command is decorate it with the `[Handler]` attribute!
 
-## Getting Started
+# Getting Started
 
 ### Hello World:
 
@@ -48,7 +48,23 @@ await app.StartAsync();
 This will map the HelloWorld class's `void Execute(..)` function to a command called `"hello"`, and it 
 will map the parameter `message` to a string Argument called `<Message>`.
 
-## Installing MinimalCommandLine
+# Installation
+
+## Easy: using the project template
+
+Simply run the following using the dotnet cli:
+
+```
+dotnet new install MinimalCli.Templates
+```
+
+Then you should be able to create a new MinimalCli project like this:
+
+```
+dotnet new minCli -n MyMinimalCliApp
+```
+
+## Advanced: Manually installing MinimalCli NuGet package
 
 Add a reference to the nuget package `MinimalCommandLine`.
 
@@ -62,6 +78,8 @@ Add a reference to the nuget package `MinimalCommandLine`.
     * Select the package
     * Select the project you want to install it into
     * Hit Install
+
+# Examples
 
 ## Simple Examples:
 

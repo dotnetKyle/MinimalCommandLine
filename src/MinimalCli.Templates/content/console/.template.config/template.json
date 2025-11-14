@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "dotnetKyle",
+  "classifications": [ "Common", "Console" ],
+  "identity": "ExampleTemplate.AsyncProject",
+  "name": "MinimalCli Console App",
+  "shortName": "minCli",
+  "sourceName":"MinimalCliApp",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  }
+}

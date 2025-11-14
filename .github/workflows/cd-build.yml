@@ -26,8 +26,12 @@ jobs:
       # packs all nuget packages at once 
     - name: Pack Minimal Command Line Nuget Alpha
       run: dotnet pack src/MinimalCli/MinimalCli.csproj -p:PackageVersion=2.0.0.${{github.run_number}}-alpha -o ./packages 
+    - name: Pack Minimal Command Line Template Nuget Alpha
+      run: dotnet pack src/MinimalCli.Templates/MinimalCli.Templates.csproj -p:PackageVersion=2.0.0.${{github.run_number}}-alpha -o ./packages 
     - name: Pack Minimal Command Line Nuget
       run: dotnet pack src/MinimalCli/MinimalCli.csproj -p:PackageVersion=2.0.0.${{github.run_number}} -o ./packages 
+    - name: Pack Minimal Command Line Template Nuget
+      run: dotnet pack src/MinimalCli.Templates/MinimalCli.Templates.csproj -p:PackageVersion=2.0.0.${{github.run_number}} -o ./packages 
 
     - name: Publish Minimal Command Line Artifacts
       uses: actions/upload-artifact@v4
@@ -52,6 +56,8 @@ jobs:
       run: ls -R
     - name: Push Minimal Command Line Nuget
       run: dotnet nuget push ./MinimalCli.2.0.0.${{github.run_number}}-alpha.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
+    - name: Push Minimal Command Line Template Nuget
+      run: dotnet nuget push ./MinimalCli.Templates.2.0.0.${{github.run_number}}-alpha.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
 
   production:
     needs: integration
@@ -67,3 +73,5 @@ jobs:
         
     - name: Push Minimal Command Line Nuget
       run: dotnet nuget push ./MinimalCli.2.0.0.${{github.run_number}}.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
+    - name: Push Minimal Command Line Template Nuget
+      run: dotnet nuget push ./MinimalCli.Templates.2.0.0.${{github.run_number}}.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
