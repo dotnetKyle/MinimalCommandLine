@@ -7,7 +7,7 @@
 		<PackageId>MinimalCli</PackageId>
 		<Title>Minimal Command Line</Title>
 		<Authors>dotnetKyle</Authors>
-		<Description>A source generator on top of System.CommandLine to minimize the boiler plate needed to get started. Just add a [Command] attribute to a function to get started!</Description>
+		<Description>A source generator on top of System.CommandLine to minimize the boiler plate needed to get started. Just add a [Handler] attribute to a function to get started!</Description>
 		<PackageProjectUrl></PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/dotnetKyle/MinimalCommandLine</RepositoryUrl>
