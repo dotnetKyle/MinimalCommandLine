@@ -232,7 +232,7 @@ internal static class GeneratorBindingsProvider
 
     private static string? GetSymbolDefaultValue(GeneratorAttributeSyntaxContext ctx, IParameterSymbol param)
     {
-        static string FormatLiteral(object value)
+        static string FormatLiteral(object? value)
         {
             return value switch
             {
@@ -245,7 +245,7 @@ internal static class GeneratorBindingsProvider
             };
         }
 
-        if (param.HasExplicitDefaultValue && param.ExplicitDefaultValue is not null)
+        if (param.HasExplicitDefaultValue)
         {
             SyntaxReference? syntaxRef = param.DeclaringSyntaxReferences.FirstOrDefault();
             if (syntaxRef?.GetSyntax() is ParameterSyntax paramSyntax && paramSyntax.Default is not null)
