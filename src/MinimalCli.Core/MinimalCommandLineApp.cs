@@ -15,13 +15,18 @@ public class MinimalCommandLineApp : IHostedService
     private CommandExecutorCli CliCommandExecutor => this.Services.GetRequiredService<CommandExecutorCli>();
     private CommandExecutorShell ShellCommandExecutor => this.Services.GetRequiredService<CommandExecutorShell>();
 
-    internal MinimalCommandLineApp(MinimalCommandLineBuilder builder, string[] args)
+    internal MinimalCommandLineApp(
+        IHost host, 
+        CommandExecutionMode executionMode, 
+        RootCommand root,
+        IConfiguration config,
+        string[] args)
     {
-        this.Host = builder.builder.Build();
-        this.cmdExecutionMode = builder.cmdExecutionMode;
-        this.Configuration = builder.Configuration;
+        this.Host = host;
+        this.cmdExecutionMode = executionMode;
+        this.Configuration = config;
+        this.RootCommand = root;
         this.args = args;
-        this.RootCommand = builder.RootCommand;
     }
 
     internal readonly Dictionary<string, Func<ParseResult, object?>> ArgumentParsers = new();

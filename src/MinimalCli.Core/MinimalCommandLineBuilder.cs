@@ -59,7 +59,7 @@ public class MinimalCommandLineBuilder : IHostApplicationBuilder
         this.Services.AddSingleton(cmdBindingFactory);
 
         // check if there was a generated root command
-        var rootOptions = commandOptionsCollection.FirstOrDefault(opt => opt.Command is RootCommand);
+        CommandOptions? rootOptions = commandOptionsCollection.FirstOrDefault(opt => opt.Command is RootCommand);
         if (rootOptions is not null)
         {
             this.RootCommand = (RootCommand)rootOptions.Command;
@@ -119,8 +119,26 @@ public class MinimalCommandLineBuilder : IHostApplicationBuilder
             //}
         }
 
-        // pass in args from builder
-        MinimalCommandLineApp app = new(this, this.args);
+        if (this.RootCommand is null)
+            throw new InvalidOperationException("RootCommand should not be null here");
+
+        // build host
+        IHost host = this.builder.Build();
+
+        // setup root command here
+        if (rootOptions is not null)
+        {
+            var rootAction = rootOptions.Handler(host.Services);
+            this.RootCommand.SetAction(rootAction);
+        }
+
+        MinimalCommandLineApp app = new(
+            host,
+            this.cmdExecutionMode,
+            this.RootCommand,
+            this.Configuration,
+            this.args
+        );
 
         return app;
     }
