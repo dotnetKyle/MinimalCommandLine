@@ -5,6 +5,7 @@
       // commandLineArgs will get called on the console application when you use Start (F5)
       "commandLineArgs": "-h"
       //"commandLineArgs": "echo-command \"foo\""
+      //"commandLineArgs": "--your-name \"developer\""
     }
   }
 }
