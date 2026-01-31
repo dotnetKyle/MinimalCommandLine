@@ -182,14 +182,9 @@ using System.CommandLine.Completions;
 public class MyData
 {
     [Handler("my-command")]
-    public void Execute(string csvFilePath)
-    {
-        if (File.Exists(csvFilePath))
-        {
-            // ... process the CSV file
-        }
-    }
+    public void Execute(string csvFilePath) { ... }
 
+    // the file name completion function
     public static IEnumerable<CompletionItem> GetFileNameCompletions(CompletionContext ctx)
     {
         string searchPattern = Path.GetFileName(ctx.WordToComplete) + "*.csv";
