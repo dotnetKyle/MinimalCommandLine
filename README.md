@@ -192,8 +192,8 @@ public class MyData
 
     public static IEnumerable<CompletionItem> GetFileNameCompletions(CompletionContext ctx)
     {
-        string fn = ctx.WordToComplete;
-        string[] files = Directory.GetFiles(Environment.CurrentDirectory, fn + "*.csv");
+        string searchPattern = Path.GetFileName(ctx.WordToComplete) + "*.csv";
+        string[] files = Directory.GetFiles(Environment.CurrentDirectory, searchPattern);
         return files.Select(f => new CompletionItem(f));
     }
 }
