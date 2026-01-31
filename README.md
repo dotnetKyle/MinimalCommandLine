@@ -169,6 +169,53 @@ Now, when you user runs the `-h` Option for your app, or `greet -h` for the gree
 will be presented with the documentation you have set up in the generated 
 `MapMyCommand(config => ..)` extensions. See the Demo project for a more complex example of this.
 
+### Argument and Option Completions:
+
+You can add auto-completion suggestions for arguments and options by providing a completion source. This is particularly useful for file paths, predefined values, or any context-sensitive completions.
+
+First, define a static method in your command class that returns completion items:
+
+```csharp
+using MinimalCli;
+using System.CommandLine.Completions;
+
+public class MyData
+{
+    [Handler("my-command")]
+    public void Execute(string csvFilePath)
+    {
+        if (File.Exists(csvFilePath))
+        {
+            // ... process the CSV file
+        }
+    }
+
+    public static IEnumerable<CompletionItem> GetFileNameCompletions(CompletionContext ctx)
+    {
+        string fn = ctx.WordToComplete;
+        string[] files = Directory.GetFiles(Environment.CurrentDirectory, fn + "*.csv");
+        return files.Select(f => new CompletionItem(f));
+    }
+}
+```
+
+Then, in your `Program.cs` file, map the completion source to the specific argument or option:
+
+```csharp
+builder.MapMyDataCommand(options =>
+{
+    options.Command.Description = "Load something from a CSV file.";
+    options.CsvFilePathArgument.Description = "The file path to the CSV file where the data is stored.";
+    
+    // Add the completion source to the argument:
+    options.CsvFilePathArgument.CompletionSources.Add(MyData.GetFileNameCompletions);
+});
+```
+
+Now when users type the command and press `Tab`, they will see CSV file suggestions based on the current directory. The completion source receives a `CompletionContext` that includes the partially typed word (`WordToComplete`), allowing you to provide intelligent, context-aware suggestions.
+
+Note: Completion sources can return simple strings or `CompletionItem` objects. For options, you can add completion sources the same way using `options.YourOption.CompletionSources.Add(...)`.
+
 ### Dependency Injection:
 
 Instance command classes are automatically registered for dependency injection and they are 
