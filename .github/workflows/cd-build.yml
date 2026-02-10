@@ -45,19 +45,27 @@ jobs:
     environment:
       name: Integration
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write 
     steps:
+
     - name: Download nugets
       uses: actions/download-artifact@v4.1.7
       with:
         name: Nugets
-      
-      
+
+    - name: nuget-logon
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: ${{secrets.NUGET_USER}}
+        
     - name: Display structure of downloaded files
       run: ls -R
     - name: Push Minimal Command Line Nuget
-      run: dotnet nuget push ./MinimalCli.2.0.0.${{github.run_number}}-alpha.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push ./MinimalCli.2.0.0.${{github.run_number}}-alpha.nupkg --api-key ${{steps.login.outputs.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
     - name: Push Minimal Command Line Template Nuget
-      run: dotnet nuget push ./MinimalCli.Templates.2.0.0.${{github.run_number}}-alpha.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push ./MinimalCli.Templates.2.0.0.${{github.run_number}}-alpha.nupkg --api-key ${{steps.login.outputs.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
 
   production:
     needs: integration
@@ -65,13 +73,22 @@ jobs:
     environment:
       name: Production
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write 
     steps:
+
     - name: Download nugets
       uses: actions/download-artifact@v4.1.7
       with:
         name: Nugets
-        
+
+    - name: nuget-logon
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: ${{secrets.NUGET_USER}}
+
     - name: Push Minimal Command Line Nuget
-      run: dotnet nuget push ./MinimalCli.2.0.0.${{github.run_number}}.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push ./MinimalCli.2.0.0.${{github.run_number}}.nupkg --api-key ${{steps.login.outputs.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
     - name: Push Minimal Command Line Template Nuget
-      run: dotnet nuget push ./MinimalCli.Templates.2.0.0.${{github.run_number}}.nupkg --api-key ${{secrets.NUGETKEY}} --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push ./MinimalCli.Templates.2.0.0.${{github.run_number}}.nupkg --api-key ${{steps.login.outputs.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
