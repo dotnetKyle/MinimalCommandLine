@@ -10,7 +10,7 @@
 		<Description>A source generator on top of System.CommandLine to minimize the boiler plate needed to get started. Just add a [Handler] attribute to a function to get started!</Description>
 		<PackageProjectUrl></PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<RepositoryUrl>https://github.com/dotnetKyle/MinimalCommandLine</RepositoryUrl>
+		<RepositoryUrl>https://github.com/dotnetKyle/MinimalCli</RepositoryUrl>
 		<PackageTags>Command; Line; System.CommandLine; Minimal; Source Generator; Minimal CLI; CLI</PackageTags>
 		<PackageReleaseNotes>Added a source generator to quickly rig up commands with minimal effort.</PackageReleaseNotes>
 		<DebugType>embedded</DebugType>

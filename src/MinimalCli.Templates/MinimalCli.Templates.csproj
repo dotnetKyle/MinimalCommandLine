@@ -6,8 +6,8 @@
     <Authors>dotnetKyle</Authors>
     <Description>A working project starting point for a MinimalCli console application.</Description>
     <PackageTags>Command; Line; System.CommandLine; Minimal; Source Generator; Minimal CLI; CLI</PackageTags>
-    <PackageProjectUrl>https://github.com/dotnetKyle/MinimalCommandLine</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/dotnetKyle/MinimalCommandLine</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/dotnetKyle/MinimalCli</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/dotnetKyle/MinimalCli</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
 
 		<!-- see: https://learn.microsoft.com/en-us/dotnet/core/tools/custom-templates#pack-a-template-into-a-nuget-package-nupkg-file -->

@@ -66,15 +66,15 @@ dotnet new minCli -n MyMinimalCliApp
 
 ## Advanced: Manually installing MinimalCli NuGet package
 
-Add a reference to the nuget package `MinimalCommandLine`.
+Add a reference to the nuget package `MinimalCli`.
 
-- Via csproj: `<PackageReference Include="MinimalCommandLine" Version="2.0.0.36" />`
-- Via dotnet cli: `dotnet package add MinimalCommandLine`
+- Via csproj: `<PackageReference Include="MinimalCli" Version="2.0.0.36" />`
+- Via dotnet cli: `dotnet package add MinimalCli`
 - Via Visual Studio Menu: 
     * Tools >
     * NuGet Package Manager > 
     * Manage NuGet Packages for Solution...
-    * Search for "MinimalCommandLine"
+    * Search for "MinimalCli"
     * Select the package
     * Select the project you want to install it into
     * Hit Install
@@ -307,7 +307,7 @@ builder
 
 ## Contributors - Getting Started
 
-`git clone https://github.com/dotnetKyle/MinimalCommandLine.git`
+`git clone https://github.com/dotnetKyle/MinimalCli.git`
 
 ### Using Visual Studio:
 

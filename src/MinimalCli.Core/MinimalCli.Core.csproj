@@ -9,7 +9,7 @@
 		<Authors>dotnetKyle</Authors>
 		<Description>A set of minimal builders that sits on top of the System.CommandLine namespace to give an experience similar to the ASP.Net Core minimal API builders.</Description>
 		<PackageProjectUrl></PackageProjectUrl>
-		<RepositoryUrl>https://github.com/dotnetKyle/MinimalCommandLine</RepositoryUrl>
+		<RepositoryUrl>https://github.com/dotnetKyle/MinimalCli</RepositoryUrl>
 		<PackageTags>Command; Line</PackageTags>
 		<DebugType>embedded</DebugType>
 		<RootNamespace>MinimalCli</RootNamespace>

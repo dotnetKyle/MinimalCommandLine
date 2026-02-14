@@ -1,4 +1,4 @@
-﻿// See https://github.com/dotnetKyle/MinimalCommandLine for more information
+﻿// See https://github.com/dotnetKyle/MinimalCli for more information
 using MinimalCli;
 
 var builder = new MinimalCommandLineBuilder(args);
