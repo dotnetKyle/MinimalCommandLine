@@ -35,6 +35,6 @@
 	<ItemGroup>
 		<!-- Runtime library nuget dependencies -->
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
-		<PackageReference Include="System.CommandLine" Version="2.0.1" />
+		<PackageReference Include="System.CommandLine" Version="2.0.2" />
 	</ItemGroup>
 </Project>
