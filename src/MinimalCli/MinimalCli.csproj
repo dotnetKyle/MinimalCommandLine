@@ -27,6 +27,7 @@
 	<ItemGroup>
 		<!-- Runtime library -->
 		<Content Include="..\MinimalCli.Core\bin\$(Configuration)\netstandard2.0\MinimalCli.Core.dll" Pack="true" PackagePath="lib/netstandard2.0/" />
+		<Content Include="..\MinimalCli.Core\bin\$(Configuration)\net8.0\MinimalCli.Core.dll" Pack="true" PackagePath="lib/net8.0/" />
 
 		<!-- Source generator library -->
 		<Content Include="..\MinimalCli.SourceGenerator\bin\$(Configuration)\netstandard2.0\MinimalCli.SourceGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs/" />
