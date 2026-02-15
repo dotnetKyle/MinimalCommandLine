@@ -61,7 +61,7 @@ dotnet new install MinimalCli.Templates
 Then you should be able to create a new MinimalCli project like this:
 
 ```
-dotnet new minCli -n MyMinimalCliApp
+dotnet new mincli -n MyMinimalCliApp
 ```
 
 ## Advanced: Manually installing MinimalCli NuGet package
