@@ -4,9 +4,8 @@
   "classifications": [ "Common", "Console" ],
   "identity": "ExampleTemplate.AsyncProject",
   "name": "MinimalCli Console App",
-  "shortName": "minCli",
-  "aliases": [ "mincli", "MinCli" ],
-  "sourceName":"MinimalCliApp",
+  "shortName": "mincli",
+  "sourceName": "MinimalCliApp",
   "tags": {
     "language": "C#",
     "type": "project"
