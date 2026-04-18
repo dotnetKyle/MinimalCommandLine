@@ -58,6 +58,11 @@ public class MinimalCommandLineBuilder : IHostApplicationBuilder
         CommandBindingFactory cmdBindingFactory = new();
         this.Services.AddSingleton(cmdBindingFactory);
 
+        // register optional appsettings.json style configuration
+        this.builder.Configuration
+            .AddJsonFile("appsettings.json", optional: true)
+            .AddJsonFile($"appsettings.{this.builder.Environment.EnvironmentName}.json", optional: true);
+
         // check if there was a generated root command
         CommandOptions? rootOptions = commandOptionsCollection.FirstOrDefault(opt => opt.Command is RootCommand);
         if (rootOptions is not null)
