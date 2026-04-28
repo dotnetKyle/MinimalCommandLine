@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MinimalCli" Version="2.0.0.41" />
+    <PackageReference Include="MinimalCli" Version="2.0.5.58" />
   </ItemGroup>
 
 </Project>
