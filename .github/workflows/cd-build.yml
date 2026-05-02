@@ -8,7 +8,7 @@ on:
     branches: [ stable ]
 
 env:
-  VERSION: 2.0.7${{github.run_number}}
+  VERSION: 2.0.7.${{github.run_number}}
 
 jobs:
   build:
