@@ -28,7 +28,7 @@ jobs:
       
       # packs all nuget packages at once 
     - name: Pack Minimal Command Line Nuget Alpha
-      run: dotnet pack src/MinimalCli/MinimalCli.csproj -p:PackageVersion=${VERSION}.-alpha -o ./packages 
+      run: dotnet pack src/MinimalCli/MinimalCli.csproj -p:PackageVersion=${VERSION}-alpha -o ./packages 
     - name: Pack Minimal Command Line Template Nuget Alpha
       run: dotnet pack src/MinimalCli.Templates/MinimalCli.Templates.csproj -p:PackageVersion=${VERSION}-alpha -o ./packages 
     - name: Pack Minimal Command Line Nuget
