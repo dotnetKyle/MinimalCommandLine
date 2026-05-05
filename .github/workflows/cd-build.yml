@@ -2,7 +2,7 @@ name: CD-Build
 
 on:
   push:
-    branches: [ stable ]
+    branches: [ pre-release-3 ]
 
 env:
   VERSION: 3.0.0-preview.${{github.run_number}}
@@ -28,10 +28,6 @@ jobs:
       run: dotnet pack src/MinimalCli/MinimalCli.csproj -p:PackageVersion=${VERSION}-alpha -o ./packages 
     - name: Pack Minimal Command Line Template Nuget Alpha
       run: dotnet pack src/MinimalCli.Templates/MinimalCli.Templates.csproj -p:PackageVersion=${VERSION}-alpha -o ./packages 
-    - name: Pack Minimal Command Line Nuget
-      run: dotnet pack src/MinimalCli/MinimalCli.csproj -p:PackageVersion=${VERSION} -o ./packages 
-    - name: Pack Minimal Command Line Template Nuget
-      run: dotnet pack src/MinimalCli.Templates/MinimalCli.Templates.csproj -p:PackageVersion=${VERSION} -o ./packages 
 
     - name: Publish Minimal Command Line Artifacts
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
