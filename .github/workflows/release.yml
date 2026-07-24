@@ -26,7 +26,9 @@ jobs:
     - name: Set package version from tag
       shell: bash
       run: |
-        VERSION="${GITHUB_REF_NAME#v}"
+        VERSION="${{ github.event.release.tag_name }}"
+        VERSION="${VERSION#v}"
+        echo "Using release tag: $VERSION"
         echo "PACKAGE_VERSION=$VERSION" >> "$GITHUB_ENV"
 
     - name: Pack NuGet packages
