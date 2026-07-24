@@ -13,6 +13,7 @@
 		<PackageTags>Command; Line</PackageTags>
 		<DebugType>embedded</DebugType>
 		<RootNamespace>MinimalCli</RootNamespace>
+        <IsPackable>false</IsPackable>
 	</PropertyGroup>
 
 	<ItemGroup>
