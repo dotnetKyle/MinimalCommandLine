@@ -158,8 +158,9 @@ public class CommandBuilder
 
             if (returnType == typeof(Task))
             {
-                var task = (Task)_delegateHandler.DynamicInvoke(dynamicArguments.ToArray());
-                return task;
+                Task? returnTask = _delegateHandler.DynamicInvoke(dynamicArguments.ToArray()) as Task;
+                return returnTask 
+                    ?? Task.FromException(new InvalidOperationException("Invoke of command failed."));
             }
             else if (returnType == typeof(void))
             {

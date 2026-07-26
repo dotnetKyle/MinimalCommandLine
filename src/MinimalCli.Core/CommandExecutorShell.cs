@@ -89,7 +89,7 @@ internal class CommandExecutorShell : ICommandExecutor
     private static bool GetInput(RootCommand rootCommand, string prompt, string[] exitCommands, out ParseResult? result)
     {
         Console.Write(prompt + "> ");
-        string commandString = Console.ReadLine();
+        string? commandString = Console.ReadLine() ?? "";
 
         foreach (string exitCmd in exitCommands)
         {
