@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+		<TargetFrameworks>net8.0;net9.0;net10.0;netstandard2.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
 		<PackageId>MinimalCli</PackageId>
@@ -27,9 +27,11 @@
 	<ItemGroup>
 		<!-- Runtime library -->
 		<Content Include="..\MinimalCli.Core\bin\$(Configuration)\netstandard2.0\MinimalCli.Core.dll" Pack="true" PackagePath="lib/netstandard2.0/" />
-		<Content Include="..\MinimalCli.Core\bin\$(Configuration)\net8.0\MinimalCli.Core.dll" Pack="true" PackagePath="lib/net8.0/" />
+        <Content Include="..\MinimalCli.Core\bin\$(Configuration)\net8.0\MinimalCli.Core.dll" Pack="true" PackagePath="lib/net8.0/" />
+        <Content Include="..\MinimalCli.Core\bin\$(Configuration)\net9.0\MinimalCli.Core.dll" Pack="true" PackagePath="lib/net9.0/" />
+        <Content Include="..\MinimalCli.Core\bin\$(Configuration)\net10.0\MinimalCli.Core.dll" Pack="true" PackagePath="lib/net10.0/" />
 
-		<!-- Source generator library -->
+        <!-- Source generator library -->
 		<Content Include="..\MinimalCli.SourceGenerator\bin\$(Configuration)\netstandard2.0\MinimalCli.SourceGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs/" />
 	</ItemGroup>
 	

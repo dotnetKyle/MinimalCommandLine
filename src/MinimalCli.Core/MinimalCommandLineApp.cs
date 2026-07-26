@@ -197,7 +197,8 @@ public class MinimalCommandLineApp : IHostedService
 
             if (returnType == typeof(Task))
             {
-                var task = (Task)_delegateHandler.DynamicInvoke(dynamicArguments.ToArray());
+                Task task = _delegateHandler.DynamicInvoke(dynamicArguments.ToArray()) as Task
+                    ?? throw new InvalidOperationException("Invoke of command failed.");
                 return task;
             }
             else if (returnType == typeof(void))

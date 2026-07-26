@@ -7,7 +7,7 @@ namespace MinimalCli;
 public class CommandBuilder<THandler>
     where THandler : notnull
 {
-    IServiceProvider _serviceProvider;
+    readonly IServiceProvider _serviceProvider;
     internal Command Command;
 
     internal CommandBuilder(Command cmd,
@@ -95,7 +95,9 @@ public class CommandBuilder<THandler>
 
         if (returnType == typeof(Task))
         {
-            var task = (Task)dlgt.DynamicInvoke(dynamicArguments.ToArray());
+            Task? task = dlgt.DynamicInvoke(dynamicArguments.ToArray()) as Task 
+                ?? throw new InvalidOperationException("Invoke of command failed.");
+
             await task.ConfigureAwait(false);
         }
         else if (returnType == typeof(void))
